@@ -28,8 +28,15 @@ Last session: **2026-08-21** → doc updated **2026-08-24**.
 
 ```sh
 cd ~/claude-projects/approval-modules
-python3 -m http.server 8747       # → http://localhost:8747
+npm install                       # restores Gaia — see §10
+python3 serve.py                  # → http://localhost:8747
 ```
+
+`serve.py` is `SimpleHTTPRequestHandler` plus `Cache-Control: no-store`. Use it rather than
+`python3 -m http.server 8747`: that sends weak validators, and Chrome then serves cached css/js after
+an edit. During development this repeatedly *looked* like a broken change — the page had one
+`.td-stack` rule while disk had another, and once a stale `module-shell.js` with no menu positioner.
+`http.server` still works if you prefer it; you just need ⌘⇧R after every edit.
 
 Opening `index.html` directly works too; serving it just lets the Inter web fonts load.
 The previous session left a server on **port 8747** — after a machine shutdown it is gone; if a
@@ -178,3 +185,26 @@ peach — *not* a neutral. The neutral keyline is **`--ga-color-border-tertiary`
 
 Also present and worth knowing about: `dist/integrations/ag-grid` — an official AG Grid theme
 integration, relevant to `My tasks`, not yet used.
+
+---
+
+## 11. Repository and deployment
+
+- **GitHub:** `https://github.com/Harald-Skogland/approval-modules` (public, `main`).
+- **Live:** `https://harald-skogland.github.io/approval-modules/` — `index.html` (My tasks) is the
+  landing page; `task-detail.html` is the Task detail view.
+
+Pages deploys through `.github/workflows/pages.yml`, **not** a branch deploy. The reason matters: the
+pages link Gaia from `node_modules/@vsn-ux/gaia-styles`, which is gitignored because Gaia comes from
+npm (§10). A branch deploy would publish every page with no design system at all. The workflow runs
+`npm ci` — honouring `package-lock.json`, so Pages gets exactly 0.6.11 — and copies the package into
+the artifact at the same path the markup already uses, so local and deployed load Gaia identically
+and nothing is vendored into git. The assemble step asserts `all.css` and `inter.css` exist, so a
+broken install fails the build instead of shipping an unstyled site.
+
+Every asset path in both pages is relative, which is what lets the site work under the
+`/approval-modules/` sub-path. **Do not introduce root-absolute paths** (`/css/...`) — they resolve
+against `harald-skogland.github.io` and 404.
+
+Known gap: nothing on My tasks links to Task detail (row click is still a stub toast), so a visitor
+landing on the deployed site has to type the `task-detail.html` URL.
