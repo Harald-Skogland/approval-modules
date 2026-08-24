@@ -1,0 +1,65 @@
+# Deploy the prototypes to GitHub Pages.
+#
+# Why a workflow and not a plain branch deploy: the pages link Gaia from
+# node_modules/@vsn-ux/gaia-styles, which is gitignored on purpose (Gaia comes
+# from npm — see HANDOFF.md §10). A branch deploy would serve every page with
+# no design system at all. This installs the pinned dependency at build time
+# and copies it into the artifact at the SAME path the pages already use, so
+# local and deployed load Gaia identically and nothing is vendored into git.
+name: Deploy to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deploys at once; don't cancel one mid-flight.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      # npm ci honours package-lock.json, so Pages gets exactly the Gaia the
+      # prototype was built against (0.6.11), not merely a compatible range.
+      - run: npm ci
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp -R index.html task-detail.html css js assets _site/
+          # Same path the <link> tags use, so no markup changes for deployment.
+          mkdir -p _site/node_modules/@vsn-ux
+          cp -R node_modules/@vsn-ux/gaia-styles _site/node_modules/@vsn-ux/
+          # Fail loudly rather than shipping an unstyled site.
+          test -f _site/node_modules/@vsn-ux/gaia-styles/dist/all.css
+          test -f _site/node_modules/@vsn-ux/gaia-styles/src/font/inter.css
+          echo "assembled:"; du -sh _site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
