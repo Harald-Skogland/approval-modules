@@ -1,0 +1,326 @@
+/* =========================================================================
+   Approval — Task detail (placeholder scaffold)
+
+   Chrome (page header, breadcrumb, button) comes from the Gaia package.
+   This file styles only what Gaia has no component for: the two vertical
+   module stacks and the draggable vertical splitter between them.
+
+   Gaia has NO splitter / resizable-panel component — checked against
+   _ds/.../components/. The splitter below is hand-built on purpose and is
+   the only non-Gaia interactive element in the view.
+
+   The stacks deliberately have NO background fill. They are empty
+   containers; modules are appended into them later.
+   ========================================================================= */
+
+:root {
+  --td-splitter-hit: 16px;   /* full grab width of the splitter column */
+  --td-splitter-rule: 1px;   /* visible hairline inside that column */
+  --td-stack-min: 280px;     /* JS clamps each stack to at least this */
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ga-color-surface-page);
+  font-family: var(--ga-font-family-primary, Inter, ui-sans-serif, system-ui, sans-serif);
+  color: var(--ga-color-text-body);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ----------------------------- app shell ------------------------------
+   The Gaia package already lays the page header out: .ga-page-header
+   padding 0, .ga-page-header__global-navigation 12px/16px with
+   space-between, __menu-breadcrumbs gap 16px, __header-actions gap 8px.
+   Those values match Figma node 14383:27611, so nothing is re-declared
+   here beyond keeping the bar from flexing in the body column.
+   --------------------------------------------------------------------- */
+
+.ga-page-header { flex: 0 0 auto; }
+
+/* No bg-fill on the page header — per Figma node 14383:27997, where the bar is
+   transparent and only the individual controls carry a white fill.
+
+   @vsn-ux/gaia-styles 0.6.11 disagrees: it paints BOTH
+   .ga-page-header__global-navigation and .ga-page-header__header-actions with
+   --ga-color-surface-primary (the latter going transparent only at >=1440px).
+   The design wins, so both are cleared here. Specificity matches the package's
+   nested `.ga-page-header .ga-page-header__x`, hence the doubled selector. */
+.ga-page-header .ga-page-header__global-navigation,
+.ga-page-header .ga-page-header__header-actions {
+  background-color: transparent;
+}
+
+/* ------------------------- context-selector trigger -------------------------
+   Gaia's .ga-context-selector in this package is the open dropdown PANEL
+   (320w, north shadow). The kit's always-visible trigger part
+   (.context-selector-trigger, Figma 30416:265527) has no class in the CSS
+   port, so it is built here. Values measured off node 29174:17274:
+   260px wide, 8px/12px/8px/8px padding, 1px border-primary, r4, 8px gaps,
+   16px icons, Body/Medium label.
+
+   Only the DEFAULT state is implemented — the kit lists hover / pressed /
+   open / single, and those were not extracted. Do not invent them.
+   -------------------------------------------------------------------------- */
+
+.td-context-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-03);          /* 8px */
+  width: 260px;
+  /* 40px to match the Gaia buttons beside it. Figma's 40 is the box without
+     the border; left to auto-height, border-box adds the 1px edges and the
+     control comes out 42, which drags the whole bar to 66 instead of 64. */
+  height: var(--ga-size-40);
+  padding: var(--ga-size-spacing-03) var(--ga-size-spacing-04)
+           var(--ga-size-spacing-03) var(--ga-size-spacing-03);  /* 8 12 8 8 */
+  border: var(--ga-size-border-width-sm) solid var(--ga-color-border-primary);
+  border-radius: var(--ga-radius);
+  background: var(--ga-color-surface-primary);
+  /* icons inherit currentColor from .ga-icon, so this sets both ink values */
+  color: var(--ga-color-text-body);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* @vsn-ux/gaia-styles has NO standalone .ga-icon sizing rule — it only sets
+   `color` on .ga-icon nested inside its own components. (The purged copy had
+   invented a 16px box + svg{width:100%}, which this markup was leaning on.)
+   So size the icons here: 16px, per Figma node 29174:17274. */
+.td-context-selector .ga-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: var(--ga-size-16);
+  height: var(--ga-size-16);
+}
+.td-context-selector .ga-icon svg { width: 100%; height: 100%; display: block; }
+
+.td-context-selector__content {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 0;
+  align-items: center;
+  gap: var(--ga-size-spacing-03);
+  overflow: hidden;
+}
+
+.td-context-selector__label {
+  flex: 1 0 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-size: var(--ga-text-md-font-size);            /* 14px */
+  line-height: var(--ga-text-md-line-height);        /* 24px */
+  font-weight: var(--ga-font-weight-medium);         /* 500 */
+  letter-spacing: var(--ga-text-md-letter-spacing);
+  color: var(--ga-color-text-body);
+}
+
+/* @vsn-ux/gaia-styles has no --ga-focus-outline / -offset composite (those were
+   invented by the copy that was purged), so the ring is composed from the real
+   tokens instead. */
+.td-context-selector:focus-visible {
+  outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus);
+  outline-offset: 2px;
+}
+
+/* --------------------------- split container --------------------------- */
+
+.td-split {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--td-left, 50%) var(--td-splitter-hit) 1fr;
+  /* no horizontal padding here: the grid percentage must resolve against
+     the same box JS measures with getBoundingClientRect(). Insets live on
+     the stacks instead. */
+}
+
+/* ------------------------------- stacks -------------------------------- */
+
+.td-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-size-spacing-05);   /* 16px — Gaia component gap */
+  min-width: 0;                     /* let the grid track shrink */
+  overflow-y: auto;                 /* still scrolls — only the bar is hidden */
+  overflow-x: hidden;
+  background: none;                 /* no bg-fill, by design */
+  padding: var(--ga-size-spacing-05);
+
+  /* Hide the scrollbar without disabling the scroll. Wheel, trackpad, drag,
+     Page Up/Down and scrollIntoView all keep working; only the visual bar and
+     the click-drag thumb go away. Firefox / legacy Edge below, Chromium and
+     Safari need the ::-webkit-scrollbar rule that follows. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.td-stack::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+/* First and last stack hug the viewport edges rather than double-padding
+   against the splitter. */
+#stack-left  { padding-left: var(--ga-size-spacing-05); padding-right: 0; }
+#stack-right { padding-right: var(--ga-size-spacing-05); padding-left: 0; }
+
+/* Neutral keyline below: --ga-color-border-tertiary (#cccfd7). NOT
+   border-secondary, which resolves to secondary-30 -> orange-30 (#f5c3a1),
+   Gaia's brand peach. */
+
+/* ------------------------------ splitter ------------------------------- */
+
+.td-splitter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: col-resize;
+  touch-action: none;          /* pointer events, not scroll gestures */
+  background: none;
+}
+
+/* the hairline */
+.td-splitter::before {
+  content: "";
+  position: absolute;
+  top: var(--ga-size-spacing-05);
+  bottom: var(--ga-size-spacing-05);
+  width: var(--td-splitter-rule);
+  background: var(--ga-color-border-tertiary);
+}
+
+/* the grab dots, centred on the hairline */
+.td-splitter__grip {
+  position: relative;
+  width: 4px;
+  height: 32px;
+  border-radius: var(--ga-radius-round);
+  background: var(--ga-color-border-tertiary);
+}
+
+.td-splitter:hover::before,
+.td-splitter:hover .td-splitter__grip,
+.td-splitter.is-dragging::before,
+.td-splitter.is-dragging .td-splitter__grip {
+  background: var(--ga-color-border-action);
+}
+
+/* Ring the grip, not the whole 16px column — a full-height outline reads as
+   a panel border rather than a focused control. */
+.td-splitter:focus-visible { outline: none; }
+
+.td-splitter:focus-visible .td-splitter__grip {
+  background: var(--ga-color-border-action);
+  outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus);
+  outline-offset: 3px;
+}
+
+/* While dragging: kill text selection and keep the resize cursor even when
+   the pointer outruns the 16px column. */
+body.td-dragging {
+  user-select: none;
+  cursor: col-resize;
+}
+
+/* ======================== task header (page-navigation) ====================
+   The page-header's second row. Gaia ships the ROW — .ga-page-header__page-
+   navigation gives it 16px inline padding, 12px bottom padding and
+   space-between, and __page-nav-start / __page-nav-end their own gaps — so
+   only the title block and the counter are styled here.
+
+   No bg-fill, per the same rule as the row above: the package leaves
+   page-navigation transparent, and it is asserted below so a future package
+   bump cannot quietly paint it.
+
+   FIDELITY: typography is Gaia tokens, not measured — staging could not be
+   re-opened (the app gates on window.outerWidth, which reports 0 under
+   automation). The prev/next arrows beside the counter are inferred from the
+   documented X/N and Z/P shortcuts, not observed.
+   ========================================================================= */
+
+.ga-page-header .ga-page-header__page-navigation { background-color: transparent; }
+
+/* Keep the row from stretching in the body's flex column. */
+.th-row { flex: 0 0 auto; }
+
+.th-titles { min-width: 0; }
+
+.th-title {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ga-text-xl-font-size);       /* 18px */
+  line-height: var(--ga-text-xl-line-height);   /* 24px */
+  font-weight: var(--ga-font-weight-normal);
+  color: var(--ga-color-text-headings);
+}
+/* Only the document type is bold, as in the product. */
+.th-title strong { font-weight: var(--ga-font-weight-bold); }
+
+.th-subtitle {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ga-text-sm-font-size);       /* 12px */
+  line-height: var(--ga-text-sm-line-height);
+  color: var(--ga-color-text-body-secondary);
+}
+
+/* ------------------------------- Other... -------------------------------- */
+
+.th-other { position: relative; display: flex; align-items: center; }
+
+/* The chevron sits after the label inside the Gaia button. */
+.th-other__btn { gap: var(--ga-size-spacing-02); }
+
+/* Same treatment as the module kebab menus: fixed, placed by ApprPlaceMenu,
+   and [hidden] asserted because Gaia sets `display` on these classes. */
+.th-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  min-width: 200px;
+}
+.th-menu[hidden],
+.th-menu .ga-menu__item[hidden] { display: none; }
+
+.th-menu .ga-menu__item {
+  width: 100%;
+  border: 0;
+  background-color: transparent;
+  font: inherit;
+  align-items: center;
+  transition: background-color var(--ga-transition-hover, 120ms ease);
+}
+.th-menu .ga-menu__item:hover,
+.th-menu .ga-menu__item:active { background-color: var(--ga-color-surface-action-hover-2); }
+.th-menu .ga-menu__item:hover .ga-menu__item-label { color: var(--ga-color-text-action-hover); }
+.th-menu .ga-menu__item:focus-visible {
+  background-color: var(--ga-color-surface-action-hover-2);
+  outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus);
+  outline-offset: calc(-1 * var(--ga-size-border-width-md));
+}
+
+/* ----------------------------- task counter ------------------------------ */
+
+.th-counter {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-02);
+  margin-left: var(--ga-size-spacing-04);
+}
+
+.th-counter__label {
+  white-space: nowrap;
+  font-size: var(--ga-text-sm-font-size);
+  color: var(--ga-color-text-body-secondary);
+}

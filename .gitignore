@@ -1,0 +1,6 @@
+# Gaia comes from npm — restore with `npm install`, never commit or vendor it.
+# (A vendored copy was purged from this project on 2026-08-24; see HANDOFF.md §10.)
+node_modules/
+
+# macOS
+.DS_Store

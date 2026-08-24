@@ -1,0 +1,9 @@
+{
+  "name": "approval-modules",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Visma.net Approval prototypes. No build step — the pages are plain HTML/CSS/vanilla JS served statically. npm is used only to pull the Gaia distribution from its real source.",
+  "dependencies": {
+    "@vsn-ux/gaia-styles": "0.6.11"
+  }
+}

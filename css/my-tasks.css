@@ -1,0 +1,322 @@
+/* =========================================================================
+   Approval — My tasks
+   Chrome (page header, breadcrumb, buttons, input, segmented control,
+   checkbox, menu) comes from the Gaia package. This file styles only what
+   Gaia has no component for: the task grid, the toolbar row, the footer bar.
+
+   Grid metrics are measured from the live staging app
+   (approval.aws.stag.visma.net, build 26.61.0-260821), which renders the
+   table with AG Grid. Where AG Grid's own defaults differ from Gaia — 13px
+   body text and #181d1f ink instead of Gaia's 14px / --ga-color-text-body —
+   the AG Grid value is reproduced deliberately. Those two are the only
+   non-token colours/sizes in this file and are named below.
+   ========================================================================= */
+
+:root {
+  /* AG Grid defaults, reproduced on purpose — not Gaia tokens */
+  --tg-font-size: 13px;
+  --tg-ink: #181d1f;
+  --tg-header-font-size: 12px;
+
+  --tg-row-h: 44px;
+  --tg-header-h: 40px;
+  --tg-cell-pad: var(--ga-size-spacing-04); /* 12px */
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ga-color-surface-page);
+  font-family: var(--ga-font-family-primary, Inter, ui-sans-serif, system-ui, sans-serif);
+  color: var(--ga-color-text-body);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ----------------------------- app shell ------------------------------ */
+
+.ga-page-header {
+  flex: 0 0 auto;
+  padding: var(--ga-size-spacing-04) var(--ga-size-spacing-05);
+}
+
+.ga-page-header__global-navigation {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-04);
+}
+
+.ga-page-header__menu-breadcrumbs,
+.ga-page-header__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-03);
+}
+
+.ga-page-header__header-actions { margin-left: auto; }
+
+.ga-page-header__menu-breadcrumbs .ga-breadcrumb { margin-left: var(--ga-size-spacing-02); }
+
+#company-select-wrap { width: 200px; }
+
+/* ------------------------------ toolbar ------------------------------- */
+
+.mt-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-04);
+  padding: var(--ga-size-spacing-03) var(--ga-size-spacing-05);
+}
+
+.mt-toolbar__spacer { margin-left: auto; }
+
+.mt-toolbar__label {
+  font-size: var(--ga-text-sm-font-size);
+  font-weight: var(--ga-font-weight-semibold, 600);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--ga-color-text-body-secondary);
+  white-space: nowrap;
+}
+
+.mt-search { width: 286px; flex: 0 0 auto; }
+.mt-search input { min-width: 0; }
+
+/* column chooser -------------------------------------------------------- */
+
+.mt-columns { position: relative; }
+
+.mt-columns__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--ga-size-spacing-02));
+  z-index: 40;
+  width: 260px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+/* Gaia's .ga-menu sets display, which beats the UA rule for [hidden] */
+.mt-columns__menu[hidden] { display: none; }
+
+.mt-columns__menu .ga-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-03);
+  width: 100%;
+  cursor: pointer;
+}
+
+.mt-columns__menu .ga-checkbox { pointer-events: none; }
+
+/* ------------------------------- grid --------------------------------- */
+
+.tasks-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 var(--ga-size-spacing-05);
+  background: var(--ga-color-surface-primary);
+  border: 1px solid var(--ga-color-border-tertiary);
+  border-radius: var(--ga-radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tg-scroll { overflow: auto; flex: 1 1 auto; min-height: 0; }
+.tg-inner { min-width: max-content; }
+
+/* header row */
+
+.tg-header {
+  display: grid;
+  grid-template-columns: var(--tg-cols);
+  height: var(--tg-header-h);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--ga-color-surface-page);
+  border-bottom: 1px solid var(--ga-color-border-tertiary);
+}
+
+.tg-hc {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-01);
+  padding: 0 var(--tg-cell-pad);
+  font-size: var(--tg-header-font-size);
+  font-weight: var(--ga-font-weight-semibold, 600);
+  letter-spacing: -0.096px;
+  color: var(--tg-ink);
+  cursor: pointer;
+  user-select: none;
+  border-right: 1px solid transparent;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tg-hc:hover { background: rgba(19, 52, 69, 0.04); }
+.tg-hc--num { justify-content: flex-end; }
+.tg-hc--plain { cursor: default; }
+.tg-hc--plain:hover { background: none; }
+
+.tg-hc__label { overflow: hidden; text-overflow: ellipsis; }
+
+.tg-hc__sort { flex: 0 0 auto; display: none; color: var(--ga-color-text-action); }
+.tg-hc--sorted .tg-hc__sort { display: block; }
+
+/* body + rows */
+
+.tg-row {
+  display: grid;
+  grid-template-columns: var(--tg-cols);
+  height: var(--tg-row-h);
+  border-bottom: 1px solid var(--ga-color-border-tertiary);
+  background: var(--ga-color-surface-primary);
+  font-size: var(--tg-font-size);
+  color: var(--tg-ink);
+}
+
+.tg-row:hover { background: var(--ga-color-surface-page); }
+.tg-row--selected { background: var(--ga-color-surface-selected, #eaf1f5); }
+.tg-row--leaving { opacity: 0; transition: opacity var(--ga-duration-fast, 0.1s) linear; }
+
+.tg-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-02);
+  padding: 0 var(--tg-cell-pad);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tg-cell--num { justify-content: flex-end; text-align: right; }
+.tg-cell--center { justify-content: center; }
+.tg-cell__text { overflow: hidden; text-overflow: ellipsis; }
+
+/* selection + action cells */
+
+.tg-cell--select,
+.tg-cell--actions { padding: 0; justify-content: center; }
+
+/* the whole cell / header box is the hit area, so a click always lands on
+   the element carrying the data attribute rather than on the marker span */
+.tg-cell--select { cursor: pointer; }
+.tg-cell--select .ga-checkbox,
+.tg-hc[data-select-all] .ga-checkbox { pointer-events: none; }
+.tg-hc[data-select-all] { cursor: pointer; justify-content: center; }
+
+.tg-cell--actions { gap: var(--ga-size-spacing-02); }
+
+.tg-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ga-radius);
+  background: none;
+  color: var(--ga-color-text-action);
+  cursor: pointer;
+}
+
+.tg-action:hover { background: var(--ga-color-surface-action-hover-2); color: var(--ga-color-text-action-hover); }
+.tg-action:focus-visible { outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus); outline-offset: -2px; }
+
+/* amount cell — primary amount, optional foreign amount underneath */
+
+.tg-amount { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; }
+.tg-amount__main { font-weight: var(--ga-font-weight-semibold, 600); }
+.tg-amount__foreign { font-size: var(--ga-text-xs-font-size); color: var(--ga-color-text-action); }
+
+/* overdue marker — the app uses the raw red scale token here, not a
+   semantic text-error token (which resolves to the heading ink) */
+.tg-overdue-icon { flex: 0 0 auto; color: var(--ga-color-red-60); }
+
+.tg-state { color: var(--tg-ink); overflow: hidden; text-overflow: ellipsis; }
+
+/* group row — AG Grid full-width row. Its content is stuck to the left
+   edge of the viewport and sized to it, so the aggregate total stays at the
+   right edge of the visible area while the grid scrolls horizontally. */
+
+.tg-row--group {
+  display: block;
+  height: var(--tg-row-h);
+  border-bottom: 1px solid var(--ga-color-border-tertiary);
+  background: var(--ga-color-surface-primary);
+}
+
+.tg-group {
+  position: sticky;
+  left: 0;
+  width: var(--tg-viewport-w, 100%);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-03);
+  padding: 0 var(--tg-cell-pad);
+  background: var(--ga-color-surface-primary);
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.tg-group:hover { background: var(--ga-color-surface-page); }
+
+.tg-group__chevron { flex: 0 0 auto; color: var(--ga-color-text-headings); transition: transform var(--ga-duration-fast, 0.1s) ease; }
+.tg-row--collapsed .tg-group__chevron { transform: rotate(-90deg); }
+
+.tg-group__label {
+  font-size: var(--tg-font-size);
+  font-weight: var(--ga-font-weight-bold, 700);
+  color: var(--ga-color-text-headings);
+}
+
+.tg-group__count { font-size: var(--ga-text-sm-font-size); font-weight: var(--ga-font-weight-medium, 500); }
+.tg-group__total { margin-left: auto; font-size: var(--tg-font-size); font-weight: var(--ga-font-weight-semibold, 600); color: var(--ga-color-text-headings); }
+
+.tg-empty {
+  padding: var(--ga-size-spacing-08, 40px);
+  text-align: center;
+  color: var(--ga-color-text-body-secondary);
+  font-size: var(--ga-text-md-font-size);
+}
+
+/* ----------------------------- footer bar ----------------------------- */
+
+.mt-footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-04);
+  padding: var(--ga-size-spacing-04) var(--ga-size-spacing-05);
+}
+
+.mt-footer__totals { margin-left: auto; display: flex; align-items: center; gap: var(--ga-size-spacing-03); }
+.mt-footer__label { font-size: var(--ga-text-md-font-size); color: var(--ga-color-text-body); }
+.mt-footer__amount { font-size: var(--ga-text-md-font-size); font-weight: var(--ga-font-weight-semibold, 600); color: var(--ga-color-text-headings); }
+
+.mt-split__btn { display: inline-flex; align-items: center; gap: var(--ga-size-spacing-02); }
+
+/* ------------------------------- toast -------------------------------- */
+
+.mt-toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--ga-size-spacing-06);
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: var(--ga-size-spacing-03) var(--ga-size-spacing-05);
+  background: var(--ga-color-text-headings);
+  color: var(--ga-color-text-on-action);
+  border-radius: var(--ga-radius);
+  font-size: var(--ga-text-md-font-size);
+  box-shadow: var(--ga-shadow-north);
+}

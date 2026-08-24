@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Approval — Task detail</title>
+<!-- Gaia, from its real source: @vsn-ux/gaia-styles 0.6.11 (npm, MIT), pinned
+     exact in package.json. Never copy this in from another project folder. -->
+<link rel="stylesheet" href="node_modules/@vsn-ux/gaia-styles/src/font/inter.css">
+<link rel="stylesheet" href="node_modules/@vsn-ux/gaia-styles/dist/all.css">
+<link rel="stylesheet" href="css/task-detail.css">
+<link rel="stylesheet" href="css/modules/module-shell.css">
+<link rel="stylesheet" href="css/modules/attachment-viewer.css">
+<link rel="stylesheet" href="css/modules/voucher-details.css">
+<link rel="stylesheet" href="css/modules/workflow-details.css">
+<link rel="stylesheet" href="css/modules/workflow-history.css">
+<link rel="stylesheet" href="css/modules/comments.css">
+<link rel="stylesheet" href="css/modules/external-editor.css">
+</head>
+<body>
+
+<!-- ============================ APP SHELL ============================
+     Page header rebuilt from Gaia UI Kit node 14383:27611
+     ("page-header / Size=L (Wide) >= 1920 px"), captured 2026-08-24.
+
+     Structure taken from that node:
+       global-navigation
+         menu+breadcrumbs   navigation-button + breadcrumb
+                            (icons/house lives INSIDE the breadcrumb, node
+                            37174:463 — it is not a separate nav button)
+         header-actions     context-selector -> feedback -> ai_chat ->
+                            notification, 8px apart
+     The node's page-navigation row is hidden in this variant, so it is not
+     implemented here.
+
+     Layout comes from the package's own .ga-page-header rules — this file no
+     longer re-declares them.
+     ================================================================== -->
+<header class="ga-page-header">
+  <div class="ga-page-header__global-navigation">
+
+    <div class="ga-page-header__menu-breadcrumbs">
+      <button class="ga-button ga-button--secondary ga-button--icon-only" aria-label="Menu" id="menu-btn">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+      </button>
+
+      <nav class="ga-breadcrumb" aria-label="Breadcrumb">
+        <!-- Home: a breadcrumb item with an icon trigger and no separator,
+             mirroring icons/house inside the Figma breadcrumb instance. -->
+        <span class="ga-breadcrumb-item">
+          <a class="ga-breadcrumb-item__trigger" href="#" aria-label="Home">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          </a>
+        </span>
+
+        <span class="ga-breadcrumb-item">
+          <button class="ga-breadcrumb-item__trigger"><span class="ga-breadcrumb-item__label">Services</span></button>
+          <span class="ga-breadcrumb-item__separator">/</span>
+        </span>
+        <span class="ga-breadcrumb-item">
+          <button class="ga-breadcrumb-item__trigger"><span class="ga-breadcrumb-item__label">Approval</span></button>
+          <span class="ga-breadcrumb-item__separator">/</span>
+        </span>
+        <span class="ga-breadcrumb-item">
+          <a class="ga-breadcrumb-item__trigger" href="index.html"><span class="ga-breadcrumb-item__label">My tasks</span></a>
+          <span class="ga-breadcrumb-item__separator">/</span>
+        </span>
+        <span class="ga-breadcrumb-item ga-breadcrumb-item--current-page">
+          <span class="ga-breadcrumb-item__trigger"><span class="ga-breadcrumb-item__label">Task detail</span></span>
+        </span>
+      </nav>
+    </div>
+
+    <div class="ga-page-header__header-actions">
+
+      <!-- context-selector, closed state (node 29174:17274). The package ships
+           .ga-context-selector for the open PANEL only — it has no trigger
+           class — so the trigger is local .td-context-selector. Opening the
+           panel is deliberately not wired up. -->
+      <button class="td-context-selector" id="context-selector" aria-haspopup="dialog" aria-expanded="false">
+        <span class="td-context-selector__content">
+          <span class="ga-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+          </span>
+          <span class="td-context-selector__label">Brilliant Accounting</span>
+        </span>
+        <span class="ga-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+        </span>
+      </button>
+
+      <button class="ga-button ga-button--secondary">Feedback</button>
+
+      <button class="ga-button ga-button--secondary ga-button--icon-only" aria-label="AI chat">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+      </button>
+
+      <button class="ga-button ga-button--secondary ga-button--icon-only" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ======================= TWO STACKS + SPLITTER ======================
+     .td-split is a 3-column grid: left stack | splitter | right stack.
+     The left column width lives in the custom property --td-left, which
+     js/task-detail.js rewrites as the splitter is dragged. The stacks
+     themselves are vertical flex containers with no background fill —
+     modules get appended into them later.
+     ==================================================================== -->
+<main class="td-split" id="split">
+
+  <section class="td-stack" id="stack-left" data-module-stack aria-label="Left module stack">
+    <appr-workflow-details data-padded></appr-workflow-details>
+    <appr-voucher-details data-padded></appr-voucher-details>
+    <appr-workflow-history data-padded></appr-workflow-history>
+    <appr-comments data-padded></appr-comments>
+    <appr-external-editor data-padded></appr-external-editor>
+  </section>
+
+  <div class="td-splitter"
+       id="splitter"
+       role="separator"
+       aria-orientation="vertical"
+       aria-label="Resize panels"
+       aria-valuemin="0"
+       aria-valuemax="100"
+       aria-valuenow="50"
+       tabindex="0"
+       title="Drag to resize. Arrow keys to nudge, double-click to reset."><span class="td-splitter__grip" aria-hidden="true"></span></div>
+
+  <section class="td-stack" id="stack-right" data-module-stack aria-label="Right module stack">
+    <appr-attachment-viewer data-fill></appr-attachment-viewer>
+  </section>
+
+</main>
+
+<script src="js/modules/module-shell.js"></script>
+<script src="js/task-header.js"></script>
+<script src="js/modules/attachment-viewer.js"></script>
+<script src="js/modules/voucher-details.js"></script>
+<script src="js/modules/workflow-details.js"></script>
+<script src="js/modules/workflow-history.js"></script>
+<script src="js/modules/comments.js"></script>
+<script src="js/modules/external-editor.js"></script>
+<script src="js/task-detail.js"></script>
+</body>
+</html>

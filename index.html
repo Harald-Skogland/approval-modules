@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Approval — My tasks</title>
+<!-- Gaia, from its real source: @vsn-ux/gaia-styles 0.6.11 (npm, MIT), pinned
+     exact in package.json. Never copy this in from another project folder. -->
+<link rel="stylesheet" href="node_modules/@vsn-ux/gaia-styles/src/font/inter.css">
+<link rel="stylesheet" href="node_modules/@vsn-ux/gaia-styles/dist/all.css">
+<link rel="stylesheet" href="css/my-tasks.css">
+</head>
+<body>
+
+<!-- ============================ APP SHELL ============================ -->
+<header class="ga-page-header">
+  <div class="ga-page-header__global-navigation">
+
+    <div class="ga-page-header__menu-breadcrumbs">
+      <button class="ga-button ga-button--secondary ga-button--icon-only" aria-label="Menu" id="menu-btn">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+      </button>
+
+      <button class="ga-button ga-button--ghost ga-button--icon-only" aria-label="Home">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      </button>
+
+      <nav class="ga-breadcrumb" aria-label="Breadcrumb">
+        <span class="ga-breadcrumb-item">
+          <button class="ga-breadcrumb-item__trigger"><span class="ga-breadcrumb-item__label">Services</span></button>
+          <span class="ga-breadcrumb-item__separator">/</span>
+        </span>
+        <span class="ga-breadcrumb-item">
+          <button class="ga-breadcrumb-item__trigger"><span class="ga-breadcrumb-item__label">Approval</span></button>
+          <span class="ga-breadcrumb-item__separator">/</span>
+        </span>
+        <span class="ga-breadcrumb-item ga-breadcrumb-item--current-page">
+          <span class="ga-breadcrumb-item__label">My tasks</span>
+        </span>
+      </nav>
+    </div>
+
+    <div class="ga-page-header__header-actions">
+      <div class="ga-native-select" id="company-select-wrap">
+        <select aria-label="Company context">
+          <option>VNA | ERP</option>
+          <option>VNA | HRM</option>
+          <option>DC testing</option>
+          <option>Nordvik Bygg AS</option>
+        </select>
+        <span class="ga-native-select__arrow">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </span>
+      </div>
+
+      <button class="ga-button ga-button--secondary">Feedback</button>
+
+      <button class="ga-button ga-button--ghost ga-button--icon-only" aria-label="Assistant">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+      </button>
+
+      <button class="ga-button ga-button--ghost ga-button--icon-only" aria-label="Help">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================== TOOLBAR ============================== -->
+<div class="mt-toolbar">
+  <div class="ga-input mt-search">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+    <input type="text" id="search" placeholder="Search..." autocomplete="off">
+  </div>
+
+  <span class="mt-toolbar__label">Group by</span>
+  <div class="ga-segmented-control" role="group" id="groupby">
+    <button class="ga-segmented-control__button ga-segmented-control__button--selected" data-group="urgency">Urgency</button>
+    <button class="ga-segmented-control__button" data-group="companyName">Company</button>
+    <button class="ga-segmented-control__button" data-group="from">From</button>
+    <button class="ga-segmented-control__button" data-group="documentType">Document type</button>
+  </div>
+
+  <div class="mt-toolbar__spacer"></div>
+
+  <label class="ga-checkbox">
+    <input class="ga-checkbox__native" type="checkbox" id="current-company">
+    <span class="ga-checkbox__marker"></span>
+    <span class="ga-checkbox__label">Current company</span>
+  </label>
+
+  <div class="mt-columns">
+    <button class="ga-button ga-button--secondary" id="columns-btn" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+      Columns
+    </button>
+    <div class="ga-menu mt-columns__menu" id="columns-menu" hidden></div>
+  </div>
+</div>
+
+<!-- =============================== GRID =============================== -->
+<div class="tasks-grid" id="grid">
+  <div class="tg-scroll" id="tg-scroll">
+    <div class="tg-inner" id="tg-inner">
+      <div class="tg-header" id="tg-header" role="row"></div>
+      <div class="tg-body" id="tg-body" role="rowgroup"></div>
+    </div>
+  </div>
+  <div class="tg-empty" id="tg-empty" hidden>No tasks match your search.</div>
+</div>
+
+<!-- ============================ FOOTER BAR ============================ -->
+<div class="mt-footer">
+  <div class="mt-footer__totals">
+    <span class="mt-footer__label" id="footer-label">Pending</span>
+    <span class="mt-footer__amount" id="footer-amount">0.00 NOK</span>
+  </div>
+  <button class="ga-button ga-button--secondary" id="approve-selected" disabled>Approve selected</button>
+  <div class="mt-split">
+    <button class="ga-button ga-button--secondary mt-split__btn" id="open-btn" disabled>
+      Open...
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="mt-toast" id="toast" hidden></div>
+
+<script src="js/data.js"></script>
+<script src="js/my-tasks.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+/* =========================================================================
+   Module — workflow-history
+
+   Chrome from css/modules/module-shell.css.
+
+   !! INVENTED LAYOUT — the product's version of this panel was never seen
+   (collapsed row, never expanded). Tokens only, no product values, because
+   there are no product values to reproduce. See the JS header.
+   ========================================================================= */
+
+.wh-list { margin: 0; padding: 0; list-style: none; }
+
+.wh-entry {
+  display: flex;
+  gap: var(--ga-size-spacing-04);
+  padding-bottom: var(--ga-size-spacing-05);
+}
+.wh-entry:last-child { padding-bottom: 0; }
+
+/* Marker + connecting rule, so the entries read as a sequence. */
+.wh-entry__mark {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--ga-radius-round);
+  background: var(--ga-color-surface-page);
+  color: var(--ga-color-icon-primary);
+}
+.wh-entry:not(:last-child) .wh-entry__mark::after {
+  content: "";
+  position: absolute;
+  top: 28px;
+  bottom: calc(-1 * var(--ga-size-spacing-05));
+  left: 50%;
+  width: var(--ga-size-border-width-sm);
+  background: var(--ga-color-border-tertiary);
+}
+
+.wh-entry__main { min-width: 0; flex: 1 1 auto; }
+
+.wh-entry__head {
+  margin: 0;
+  font-size: var(--ga-text-md-font-size);
+  line-height: var(--ga-text-md-line-height);
+  color: var(--ga-color-text-body);
+}
+.wh-entry__action { font-weight: var(--ga-font-weight-semibold); }
+.wh-entry__obo    { font-style: italic; }
+
+.wh-entry__when {
+  margin: 0;
+  font-size: var(--ga-text-sm-font-size);
+  line-height: var(--ga-text-sm-line-height);
+  color: var(--ga-color-text-body-secondary, var(--ga-color-text-body));
+}
+
+.wh-entry__note {
+  margin: var(--ga-size-spacing-02) 0 0;
+  padding: var(--ga-size-spacing-03) var(--ga-size-spacing-04);
+  border-radius: var(--ga-radius);
+  background: var(--ga-color-surface-page);
+  font-size: var(--ga-text-sm-font-size);
+  line-height: var(--ga-text-sm-line-height);
+  color: var(--ga-color-text-body);
+}
+
+.wh-empty {
+  margin: 0;
+  font-size: var(--ga-text-md-font-size);
+  color: var(--ga-color-text-body);
+}

@@ -1,0 +1,136 @@
+/* =========================================================================
+   Module — workflow-details
+
+   Chrome from css/modules/module-shell.css.
+
+   FIDELITY: segment shape and colours are APPROXIMATED from the 2026-08-24
+   screenshot, not measured — see the header comment in
+   js/modules/workflow-details.js for why. Colours come from Gaia's raw scale
+   as the nearest match, the same call as the overdue red in my-tasks.css.
+   ========================================================================= */
+
+.wd-chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wd-step {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  gap: var(--ga-size-spacing-03);
+}
+
+/* Chevron/arrow segment. The notch is cut with clip-path so the shape needs no
+   extra markup; the negative margin closes the seam between segments. */
+.wd-seg {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-02);
+  min-width: 0;
+  height: 32px;
+  padding: 0 var(--ga-size-spacing-04) 0 var(--ga-size-spacing-05);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
+  font-size: var(--ga-text-sm-font-size);
+  line-height: 1;
+  color: var(--ga-color-text-on-action);
+}
+
+.wd-step:first-child .wd-seg {
+  padding-left: var(--ga-size-spacing-04);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);
+}
+.wd-step:last-child .wd-seg {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 10px 50%);
+}
+
+.wd-seg__icon  { flex: 0 0 auto; }
+.wd-seg__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--ga-font-weight-semibold); }
+
+/* Segment colours, nearest match to the capture.
+   NOTE --ga-color-green-70 does NOT exist in @vsn-ux/gaia-styles 0.6.11 (it
+   ships green-60); an undefined custom property fails silently, which left
+   this segment unfilled and its cream text invisible. Use the semantic
+   --ga-color-success (= green-60 #448548) instead. */
+.wd-step--done    .wd-seg { background: var(--ga-color-success); }    /* #448548 */
+.wd-step--current .wd-seg { background: var(--ga-color-cyan-70); }    /* #2a6480 */
+.wd-step--future  .wd-seg { background: var(--ga-color-neutral-30);   /* #cccfd7 */
+                            color: var(--ga-color-text-body); }
+
+.wd-caption {
+  margin: 0;
+  padding-right: var(--ga-size-spacing-04);
+  padding-left: var(--ga-size-spacing-05);
+  font-size: var(--ga-text-sm-font-size);
+  line-height: var(--ga-text-sm-line-height);
+  color: var(--ga-color-text-body);
+}
+.wd-step:first-child .wd-caption { padding-left: var(--ga-size-spacing-04); }
+
+/* The current step's caption sits on a tint in the product. The exact tint was
+   not measured; --ga-color-surface-highlight resolves to secondary-30 ->
+   orange-30 (Gaia's brand peach), which is far too loud a guess, so this uses
+   the neutral page surface until it can be measured. */
+.wd-step--current .wd-caption {
+  background: var(--ga-color-surface-page);
+  padding-block: var(--ga-size-spacing-02);
+  border-radius: var(--ga-radius);
+}
+
+.wd-caption__person--italic { font-style: italic; }
+
+/* ------------------------------ started at ------------------------------ */
+
+.wd-started {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-03);
+  margin: 0;
+  font-size: var(--ga-text-sm-font-size);
+  line-height: 1;
+  color: var(--ga-color-text-body);
+}
+.wd-started__icon { flex: 0 0 auto; color: var(--ga-color-icon-primary); }
+
+/* ------------------------------ detail row ------------------------------ */
+
+.wd-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-03);
+  width: 100%;
+  padding: var(--ga-size-spacing-04) 0;
+  border: 0;
+  border-top: var(--ga-size-border-width-sm) solid var(--ga-color-border-tertiary);
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ga-color-text-action);
+}
+.wd-row:hover  { color: var(--ga-color-text-action-hover); }
+.wd-row:focus-visible {
+  outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--ga-radius);
+}
+
+.wd-row__label   { font-size: var(--ga-text-md-font-size); font-weight: var(--ga-font-weight-semibold); }
+.wd-row__value   { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+                   white-space: nowrap; font-size: var(--ga-text-md-font-size);
+                   color: var(--ga-color-text-body); }
+.wd-row__chevron { flex: 0 0 auto; }
+
+/* Narrow hosting: stack the chain vertically rather than crushing segments. */
+@container (max-width: 560px) {
+  .wd-chain { flex-direction: column; gap: var(--ga-size-spacing-04); }
+  .wd-seg, .wd-step:first-child .wd-seg, .wd-step:last-child .wd-seg { clip-path: none; border-radius: var(--ga-radius); }
+  .wd-caption, .wd-step:first-child .wd-caption { padding-left: var(--ga-size-spacing-04); }
+}
+appr-workflow-details { container-type: inline-size; }

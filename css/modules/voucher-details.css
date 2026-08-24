@@ -1,0 +1,50 @@
+/* =========================================================================
+   Module — voucher-details
+
+   Chrome comes from css/modules/module-shell.css; this file is the field grid.
+
+   FIDELITY NOTE — the label/value typography here is NOT measured. The panel's
+   field set, order and three-column arrangement come from the 2026-08-24
+   staging capture, but staging could not be re-opened to read computed styles
+   (the app gates on window.outerWidth, which reports 0 under automation), so
+   type and spacing use Gaia tokens rather than product values. Re-measure
+   before treating this module as pixel-faithful.
+   ========================================================================= */
+
+.vd-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ga-size-spacing-05);
+  margin: 0;
+}
+
+/* Description spans the row, as in the product. */
+.vd-field--wide { grid-column: 1 / -1; }
+
+.vd-field { min-width: 0; }
+
+.vd-label {
+  margin: 0 0 var(--ga-size-spacing-01);
+  font-size: var(--ga-text-sm-font-size);       /* 12px */
+  line-height: var(--ga-text-sm-line-height);
+  font-weight: var(--ga-font-weight-normal);
+  color: var(--ga-color-text-body-secondary, var(--ga-color-text-body));
+}
+
+.vd-value {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ga-text-md-font-size);       /* 14px */
+  line-height: var(--ga-text-md-line-height);
+  font-weight: var(--ga-font-weight-semibold);
+  letter-spacing: var(--ga-text-md-letter-spacing);
+  color: var(--ga-color-text-body);
+}
+
+/* Narrow hosting (a single stack squeezed by the splitter, or My tasks). */
+@container (max-width: 520px) {
+  .vd-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+appr-voucher-details { container-type: inline-size; }

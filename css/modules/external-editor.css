@@ -1,0 +1,41 @@
+/* =========================================================================
+   Module — external-editor
+
+   Chrome from css/modules/module-shell.css.
+
+   The surface is an honest placeholder, not a mock of the sending system's
+   editor — its interface was never captured. Dashed bound so it reads as
+   "something else renders here", not as finished UI.
+   ========================================================================= */
+
+.xe-surface {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ga-size-spacing-03);
+  min-height: 200px;
+  padding: var(--ga-size-spacing-06);
+  border: var(--ga-size-border-width-sm) dashed var(--ga-color-border-tertiary);
+  border-radius: var(--ga-radius);
+  background: var(--ga-color-surface-page);
+  text-align: center;
+}
+
+.xe-surface__icon { color: var(--ga-color-icon-primary); }
+
+.xe-surface__title {
+  margin: 0;
+  font-size: var(--ga-text-md-font-size);
+  font-weight: var(--ga-font-weight-semibold);
+  color: var(--ga-color-text-body);
+}
+
+.xe-surface__note {
+  margin: 0;
+  max-width: 46ch;
+  font-size: var(--ga-text-sm-font-size);
+  line-height: var(--ga-text-sm-line-height);
+  color: var(--ga-color-text-body-secondary, var(--ga-color-text-body));
+}

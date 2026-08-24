@@ -1,0 +1,165 @@
+/* =========================================================================
+   Module shell — chrome shared by every Approval module.
+
+   Header metrics measured from the live staging app on 2026-08-24
+   (approval.aws.stag.visma.net), not eyeballed:
+
+     panel   radius 4, white surface, no shadow
+     header  56h, space-between, border-bottom 1px #dadada
+     title   16px / 700 / line-height 19px / ls -0.096px
+
+   Two deliberate non-token values, both from the product:
+     - title line-height 19px  (Gaia's lg line-height is 24px)
+     - header rule #dadada     (Gaia's neutral keyline is #cccfd7)
+   Same call as the AG Grid values in css/my-tasks.css. The header controls
+   are real Gaia ghost buttons and the dropdown is a real .ga-menu, so none of
+   that is restyled here.
+   ========================================================================= */
+
+.appr-module {
+  /* A module fills the width it is given and never sets its own margins. */
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--ga-color-surface-primary);
+  border-radius: var(--ga-radius);
+  overflow: hidden;
+  /* Grow to fit content, never shrink below it. In a flex column whose total
+     content exceeds the stack, the default flex-shrink:1 squeezes every module
+     and each one sprouts its own scrollbar; 0 0 auto makes them size to content
+     and lets the STACK scroll instead. */
+  flex: 0 0 auto;
+}
+
+/* Stretch only where the host provides spare height (the task-detail stack).
+   min-height keeps it usable if it ever shares a stack with other modules and
+   there is no spare height to take. */
+.appr-module[data-fill]            { flex: 1 1 auto; min-height: 240px; }
+/* Collapsed = header height only, so it must stop filling. */
+.appr-module[collapsed][data-fill] { flex: 0 0 auto; min-height: 0; }
+
+/* -------------------------------- header -------------------------------- */
+
+.apm-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ga-size-spacing-04);
+  height: 56px;
+  /* 8px, not the measured 18px: the heading is a Gaia ghost button that brings
+     its own 16px inline padding and a hover fill, so 18px here would push the
+     label to 34px from the edge. Text lands at 24px. */
+  padding: 0 var(--ga-size-spacing-03);
+  border-bottom: var(--ga-size-border-width-sm) solid #dadada; /* product value */
+}
+
+/* No body below a collapsed module, so the rule would read as a stray line
+   along its bottom edge. */
+.appr-module[collapsed] .apm-header { border-bottom: 0; }
+
+/* --------------------------- heading = toggle ----------------------------
+   Gaia's ghost gives the ink, hover fill and focus ring, so only the label
+   type is overridden: the measured 16px/700 heading instead of the button
+   default 14px/500. Colour is deliberately NOT pinned — it inherits the
+   button's currentColor so Gaia's own states still drive it. */
+.apm-toggle {
+  min-width: 0;                 /* let a long title ellipsis instead of pushing */
+  gap: var(--ga-size-spacing-03);
+}
+
+.apm-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ga-text-lg-font-size);      /* 16px */
+  font-weight: var(--ga-font-weight-bold);     /* 700, as measured */
+  line-height: 19px;                           /* product value, not the 24px token */
+  letter-spacing: var(--ga-text-md-letter-spacing);
+  color: inherit;
+}
+
+/* ------------------------------ context menu ---------------------------- */
+
+.apm-menu-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+/* position: fixed, not absolute — the menu has TWO ancestors that would clip
+   it: .appr-module has overflow:hidden (to clip its own corners), and the
+   stack has overflow-y:auto. Absolute positioning survived neither once a
+   module was collapsed to 56px, nor when a module sat near the stack's bottom
+   edge. Fixed takes it out of the clipping chain; top/left are computed in
+   _positionMenu() on open, and kept in step on scroll and resize. */
+.apm-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  min-width: 224px;
+}
+
+/* Gaia sets `display` on .ga-menu, .ga-menu__item and .ga-menu__separator,
+   which beats the UA rule for [hidden] — without these, a menu hidden by the
+   attribute renders open and hidden rows stay visible. */
+.apm-menu[hidden],
+.apm-menu .ga-menu__item[hidden],
+.apm-menu .ga-menu__separator[hidden] { display: none; }
+
+/* .ga-menu__item is a <button> here, so strip the button chrome. Use the
+   background-color longhand, NOT `background: none` — the shorthand also reset
+   the hover fill Gaia sets on .ga-menu__item:hover, which left rows with a
+   darkening label and no fill. */
+.apm-menu .ga-menu__item {
+  width: 100%;
+  border: 0;
+  background-color: transparent;
+  font: inherit;
+  align-items: center;
+  transition: background-color var(--ga-transition-hover, 120ms ease);
+}
+
+/* Hover / active / keyboard states, on Gaia's own tokens — the same values
+   .ga-menu__item carries in the package, asserted here so a reset in this file
+   can never silently swallow them again. */
+.apm-menu .ga-menu__item:hover {
+  background-color: var(--ga-color-surface-action-hover-2);   /* #fae0ce */
+}
+.apm-menu .ga-menu__item:hover .ga-menu__item-label {
+  color: var(--ga-color-text-action-hover);                   /* #133445 */
+}
+
+.apm-menu .ga-menu__item:active {
+  background-color: var(--ga-color-surface-action-hover-2);
+}
+
+/* Keyboard parity: the rows are buttons, so they are tabbable. */
+.apm-menu .ga-menu__item:focus-visible {
+  background-color: var(--ga-color-surface-action-hover-2);
+  outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus);
+  outline-offset: calc(-1 * var(--ga-size-border-width-md));
+}
+
+/* Gaia indents the separator 12px from the left; give it room either side. */
+.apm-menu .ga-menu__separator { margin-block: var(--ga-size-spacing-02); }
+
+/* --------------------------------- body --------------------------------- */
+
+/* No overflow here: the body is as tall as its content, so a module never
+   scrolls internally. Anything that genuinely needs its own scroll (the PDF
+   embed) opts in from its own file. */
+.apm-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+/* Modules with their own padded content opt in; the attachment viewer does
+   not, because its document fills the module edge to edge. */
+.appr-module[data-padded] .apm-body { padding: var(--ga-size-spacing-05); gap: var(--ga-size-spacing-05); }

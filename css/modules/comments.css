@@ -1,0 +1,66 @@
+/* =========================================================================
+   Module — comments
+
+   Chrome from css/modules/module-shell.css. The textarea is Gaia's
+   .ga-text-area and the button is .ga-button--primary; this file only lays
+   the list and compose block out.
+
+   !! The comment row layout and the compose affordance were NEVER OBSERVED —
+   the captured task had zero comments. Tokens only. See the JS header.
+   ========================================================================= */
+
+.cm-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--ga-size-spacing-04); }
+.cm-list:empty { display: none; }
+
+.cm-item {
+  padding: var(--ga-size-spacing-04);
+  border-radius: var(--ga-radius);
+  background: var(--ga-color-surface-page);
+}
+
+.cm-item__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ga-size-spacing-03);
+  margin: 0 0 var(--ga-size-spacing-02);
+}
+.cm-item__author { font-size: var(--ga-text-md-font-size); font-weight: var(--ga-font-weight-semibold); color: var(--ga-color-text-body); }
+.cm-item__when   { flex: 0 0 auto; font-size: var(--ga-text-sm-font-size); color: var(--ga-color-text-body-secondary, var(--ga-color-text-body)); }
+
+.cm-item__text {
+  margin: 0;
+  font-size: var(--ga-text-md-font-size);
+  line-height: var(--ga-text-md-line-height);
+  color: var(--ga-color-text-body);
+  overflow-wrap: anywhere;
+}
+
+.cm-empty {
+  margin: 0;
+  font-size: var(--ga-text-md-font-size);
+  color: var(--ga-color-text-body);
+}
+
+/* --------------------------------- compose -------------------------------- */
+
+.cm-compose { display: flex; flex-direction: column; gap: var(--ga-size-spacing-03); }
+.cm-compose__field { width: 100%; resize: vertical; }
+
+.cm-compose__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ga-size-spacing-04);
+}
+
+/* Straight from the docs: comments are not private. */
+.cm-compose__warning {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--ga-text-sm-font-size);
+  line-height: var(--ga-text-sm-line-height);
+  color: var(--ga-color-text-body-secondary, var(--ga-color-text-body));
+}
+
+.cm-compose__submit { flex: 0 0 auto; }

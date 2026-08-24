@@ -1,0 +1,40 @@
+/* =========================================================================
+   Module — attachment-viewer
+
+   Chrome comes from css/modules/module-shell.css. This file styles only the
+   document surface.
+
+   The document fills every pixel below the header. The product insets its
+   embed with py-2 (8px top and bottom); that read as white bars above and
+   below the page here, so it is deliberately NOT reproduced — do not add it
+   back as a "missing" detail on a later fidelity pass.
+   ========================================================================= */
+
+appr-attachment-viewer .apm-body { padding: 0; overflow: hidden; }
+
+/* The document keeps its own scroll — that is the browser's PDF viewer, not
+   module chrome. min-height stops it collapsing to nothing when the module
+   shares a stack and there is no spare height to fill. */
+.am-embed {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 480px;
+  border: 0;
+  display: block;
+}
+
+/* Empty / no-attachment state. The product's empty state is unspecified —
+   a plain single line, deliberately not invented further. */
+.am-body--empty {
+  align-items: center;
+  justify-content: center;
+  font-size: var(--ga-text-md-font-size);
+  color: var(--ga-color-text-body);
+}
+
+/* --------------------------- compact (My tasks) ---------------------------
+   Hook for hosting inside My tasks later: a shorter document surface so the
+   module can sit in a denser view. The real My tasks placement is NOT
+   specified yet — this only stops the module assuming a full-height column. */
+appr-attachment-viewer[compact] .am-embed { height: 320px; }
+appr-attachment-viewer[compact] { border: var(--ga-size-border-width-sm) solid var(--ga-color-border-tertiary); }
