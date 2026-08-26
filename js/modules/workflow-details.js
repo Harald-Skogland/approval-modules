@@ -4,17 +4,20 @@
    Where the document is in its approval workflow: the step chain, who acted
    or is expected to act, when it started, and a row into the current step.
 
-   FIDELITY — READ THIS BEFORE TRUSTING THE VISUALS
-   Structure is taken from the 2026-08-24 staging capture: three chain
-   segments (Approval initiated -> Unknown -> A) with a caption under each, a
-   timestamp line, then a "Current workflow step" row. That much is observed.
+   The step chain is Gaia's PROGRESS INDICATOR, horizontal variant
+   (.ga-progress-indicator--horizontal), adopted 2026-08-26. It replaced a
+   hand-rolled chevron chain whose shape and colours were approximated from a
+   screenshot — so that whole fidelity caveat is gone: shape, state colours,
+   typography and focus behaviour now come from the design system.
 
-   The segment SHAPE and COLOURS are approximated from a screenshot, not
-   measured — staging could not be re-opened to read computed styles (the app
-   gates on window.outerWidth, which reports 0 under automation). Colours are
-   picked from Gaia's raw scale as the nearest match to what the capture shows,
-   the same way the overdue red in my-tasks.css uses --ga-color-red-60 rather
-   than a semantic token. Re-measure before calling this pixel-faithful.
+   State mapping:
+     completed  -> --completed   (border-success, icon-success)
+     current    -> --current     (4px border-action, icon-action, + current-dot)
+     future     -> --incomplete  (label in text-body, not greyed out: the step
+                                  is unreached, not disabled)
+
+   Structure still follows the 2026-08-24 staging capture: three steps with a
+   caption each, a timestamp line, then a "Current workflow step" row.
 
    "Workflow history" is a SEPARATE module (the user's call, 2026-08-24) even
    though the product renders it as a second row inside this panel.
@@ -36,61 +39,89 @@
   var CLOCK     = { circles: [[12, 12, 10]], polylines: ['12 6 12 12 16 14'] };
   var CHEVRON_R = { paths: ['m9 18 6-6-6-6'] };
 
-  /* Synthetic Norwegian data, consistent with the bundled claim PDF. */
+  var CTX = window.ApprTask || {};
+  var T = CTX.task || {};
+  /* The requester comes from the open task; the approvers downstream are
+     invented, since the real workflow was never captured. */
+  var ORIGIN = T.from || 'the sending system';
+  var SOURCE = T.displayApplicationTypeName || 'the sending system';
+
+  /* `state` is the Gaia modifier suffix. Captions are plain strings now: the
+     items are <button>s (Gaia gives them cursor:pointer and a focus ring), and
+     an <a> cannot be nested inside a button — so the person names are no longer
+     separate links and the whole step is the click target instead. */
   var STEPS = [
-    { state: 'done',    icon: CHECK,     label: 'Approval initiated',
-      caption: [{ link: 'Ingrid Halvorsen' }, { text: ' activated from Visma.net Expense' }] },
-    { state: 'current', icon: HOURGLASS,  label: 'Department approval',
-      caption: [{ text: 'Pending approval by ' }, { link: 'Kjell Wangen' }] },
-    { state: 'future',  icon: LOCK,       label: 'Finance',
-      caption: [{ text: 'Tasks for ' }, { link: 'Marit Solheim', italic: true }] }
+    { state: 'completed',  icon: CHECK,     label: 'Approval initiated',
+      description: ORIGIN + ' activated from ' + SOURCE },
+    { state: 'current',    icon: HOURGLASS, label: 'Department approval',
+      description: 'Pending approval by Kjell Wangen' },
+    { state: 'incomplete', icon: LOCK,      label: 'Finance',
+      description: 'Tasks for Marit Solheim' }
   ];
 
-  var STARTED = '21/08/2026 at 14:55';
+  var STARTED = (CTX.fmtDate ? CTX.fmtDate(T.activatedDate) : '21/08/2026') + ' at 14:55';
 
   class WorkflowDetails extends window.ApprModule {
 
     get defaultLabel() { return 'Workflow details'; }
 
     renderBody(body) {
-      /* ------------------------------ chain ------------------------------ */
-      var chain = document.createElement('ol');
-      chain.className = 'wd-chain';
+      /* ------------------------------ chain ------------------------------
+       Gaia's horizontal progress indicator. Markup order per the package:
+       __indicator (holds the .ga-icon) > __content > __label > __label-text,
+       then __description; __current-dot only on the current step. */
+    var chain = document.createElement('div');
+    chain.className = 'ga-progress-indicator ga-progress-indicator--horizontal wd-chain';
 
-      STEPS.forEach(function (s) {
-        var li = document.createElement('li');
-        li.className = 'wd-step wd-step--' + s.state;
+    STEPS.forEach(function (s) {
+      var item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'ga-progress-indicator__item ga-progress-indicator__item--' + s.state;
+      if (s.state === 'current') { item.setAttribute('aria-current', 'step'); }
 
-        var seg = document.createElement('div');
-        seg.className = 'wd-seg';
-        var ic = I(s.icon, '16');
-        ic.classList.add('wd-seg__icon');
-        var lbl = document.createElement('span');
-        lbl.className = 'wd-seg__label';
-        lbl.textContent = s.label;
-        seg.appendChild(ic);
-        seg.appendChild(lbl);
+      var ind = document.createElement('span');
+      ind.className = 'ga-progress-indicator__indicator';
+      /* .ga-icon carries no size in this package — the wrapper must set it. */
+      var icon = document.createElement('span');
+      icon.className = 'ga-icon';
+      icon.appendChild(I(s.icon, '16'));
+      ind.appendChild(icon);
 
-        var cap = document.createElement('p');
-        cap.className = 'wd-caption';
-        s.caption.forEach(function (part) {
-          if (part.link) {
-            var a = document.createElement('a');
-            a.className = 'ga-link wd-caption__person' + (part.italic ? ' wd-caption__person--italic' : '');
-            a.href = '#';
-            a.textContent = part.link;
-            cap.appendChild(a);
-          } else {
-            cap.appendChild(document.createTextNode(part.text));
-          }
-        });
+      var content = document.createElement('span');
+      content.className = 'ga-progress-indicator__content';
 
-        li.appendChild(seg);
-        li.appendChild(cap);
-        chain.appendChild(li);
-      });
+      var label = document.createElement('span');
+      label.className = 'ga-progress-indicator__label';
+      var text = document.createElement('span');
+      text.className = 'ga-progress-indicator__label-text';
+      text.textContent = s.label;
+      label.appendChild(text);
 
-      body.appendChild(chain);
+      var desc = document.createElement('span');
+      desc.className = 'ga-progress-indicator__description';
+      desc.textContent = s.description;
+
+      content.appendChild(label);
+      content.appendChild(desc);
+
+      item.appendChild(ind);
+      item.appendChild(content);
+
+      if (s.state === 'current') {
+        var dot = document.createElement('span');
+        dot.className = 'ga-progress-indicator__current-dot';
+        item.appendChild(dot);
+      }
+
+      /* Stubbed: jumping to a workflow step is not specified. */
+      item.addEventListener('click', function () {
+        this.emit('appr:action', { action: 'open-step', step: s.label });
+      }.bind(this));
+
+      chain.appendChild(item);
+    }, this);
+
+    body.appendChild(chain);
 
       /* ---------------------------- started at --------------------------- */
       var when = document.createElement('p');

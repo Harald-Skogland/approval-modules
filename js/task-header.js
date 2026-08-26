@@ -1,5 +1,28 @@
 /* =========================================================================
-   Task header — the page-header's second row.
+   Task header — the row carrying the task's identity and its actions.
+
+   Rendered in two places (2026-08-25):
+     Task detail — as the second row of Gaia's .ga-page-header, using the
+                   package's own .ga-page-header__page-navigation classes.
+     My tasks    — inside the reading pane, above the module stack.
+
+   Hence a renderer rather than a one-shot builder: window.ApprTaskHeader
+   .render(container, opts). The two hosts differ in more than position —
+   prev/next NAVIGATE from Task detail but must move the PREVIEW in the pane,
+   or you would be thrown off the list. opts.onNavigate switches that.
+
+   opts
+     onNavigate(id)  called by prev/next instead of changing location
+     showBack        back arrow (default true; false in the pane, where it
+                     would point at the page you are already on)
+     openHref        when set, the title block becomes a real link to it and
+                     the whole row becomes clickable (used by the pane, whose
+                     header is the route to the full page). A genuine <a> so
+                     keyboard, middle-click and right-click all behave; the
+                     row-level handler only widens the hit area for the mouse.
+     showActions     Approve / Reject... / Other... (default true; false in the
+                     pane, which is read-only)
+     asPageRow       wrap in .ga-page-header__page-navigation (default true)
 
    Back arrow + document title + subtitle on the left; Approve / Reject... /
    Other... and the task counter with prev/next on the right.
@@ -31,15 +54,9 @@
   var CHEVRON_LEFT = { paths: ['m15 18-6-6 6-6'] };
   var CHEVRON_RIGHT = { paths: ['m9 18 6-6-6-6'] };
 
-  /* Synthetic, matching the bundled claim and the 202-task My tasks data. */
-  var TASK = {
-    type: 'Expense claim',
-    requester: 'Ingrid Halvorsen',
-    company: 'Nordvik Bygg AS',
-    source: 'Visma.net Expense',
-    index: 201,
-    total: 202
-  };
+  /* Read per render, not once at load — the pane repoints the context as rows
+     are clicked, and the header re-renders on appr:task-changed. */
+  function ctx() { return window.ApprTask || {}; }
 
   /* Documented as living behind the split button (gaia-ds -> Approval). */
   var OTHER_ACTIONS = [
@@ -65,32 +82,48 @@
     return el;
   }
 
-  function build() {
-    var header = document.querySelector('.ga-page-header');
-    if (!header || header.querySelector('.ga-page-header__page-navigation')) { return; }
+  function render(container, opts) {
+    if (!container) { return null; }
+    opts = opts || {};
+    var CTX = ctx();
+    var T = CTX.task || {};
+    var asPageRow = opts.asPageRow !== false;
+    var showBack = opts.showBack !== false;
 
     var row = document.createElement('div');
-    row.className = 'ga-page-header__page-navigation th-row';
+    row.className = (asPageRow ? 'ga-page-header__page-navigation ' : 'th-inline ') + 'th-row';
 
     /* ------------------------------- start ------------------------------- */
     var start = document.createElement('div');
-    start.className = 'ga-page-header__page-nav-start';
+    start.className = 'ga-page-header__page-nav-start th-start';
 
-    start.appendChild(ghostIcon('Back to My tasks', ARROW_LEFT, 'index.html'));
+    if (showBack) {
+      start.appendChild(ghostIcon('Back to My tasks', ARROW_LEFT, 'index.html'));
+    }
 
-    var titles = document.createElement('div');
+    var titles = document.createElement(opts.openHref ? 'a' : 'div');
     titles.className = 'th-titles';
+    if (opts.openHref) {
+      titles.href = opts.openHref;
+      titles.className += ' th-titles--link';
+    }
 
     var h1 = document.createElement('h1');
     h1.className = 'th-title';
     var strong = document.createElement('strong');
-    strong.textContent = TASK.type;
+    strong.textContent = T.documentType || 'Task';
     h1.appendChild(strong);
-    h1.appendChild(document.createTextNode(' - ' + TASK.requester + ' → ' + TASK.company));
+    /* "{type} - {from} → {company}", the product's pattern. `from` is the
+       supplier for document-led types and the requester for person-led ones,
+       which is already resolved in data.js. */
+    var rest = [T.from, T.companyName].filter(Boolean).join(' → ');
+    if (rest) { h1.appendChild(document.createTextNode(' - ' + rest)); }
 
     var sub = document.createElement('p');
     sub.className = 'th-subtitle';
-    sub.textContent = 'Received from ' + TASK.source;
+    sub.textContent = T.displayApplicationTypeName
+      ? 'Received from ' + T.displayApplicationTypeName
+      : '';
 
     titles.appendChild(h1);
     titles.appendChild(sub);
@@ -98,7 +131,13 @@
 
     /* -------------------------------- end -------------------------------- */
     var end = document.createElement('div');
-    end.className = 'ga-page-header__page-nav-end';
+    end.className = 'ga-page-header__page-nav-end th-end';
+
+    /* Approve / Reject... / Other... are omitted in the My tasks pane (user's
+       call 2026-08-25): acting on a task there means acting on a preview, and
+       Reject plus all four Other actions require a mandatory comment. The pane
+       is for reading; Open full view is where you go to act. */
+    var showActions = opts.showActions !== false;
 
     var approve = document.createElement('button');
     approve.className = 'ga-button ga-button--primary';
@@ -185,28 +224,70 @@
 
     var count = document.createElement('span');
     count.className = 'th-counter__label';
-    count.textContent = 'Task ' + TASK.index + ' / ' + TASK.total;
+    count.textContent = CTX.index ? 'Task ' + CTX.index + ' / ' + CTX.total : '';
+    /* Say so when the position is within the filtered list rather than all 202,
+       otherwise "Task 3 / 7" looks like a bug. */
+    if (CTX.scoped && CTX.index) { count.title = 'Position in the list you came from'; }
 
+    /* Disabled at the ends rather than hidden — the control should not move. */
     var prev = ghostIcon('Previous task', CHEVRON_LEFT);
-    prev.addEventListener('click', function () { emit('prev-task'); });
+    prev.disabled = CTX.prevId == null;
+    prev.addEventListener('click', function () {
+      emit('prev-task', { id: CTX.prevId });
+      opts.onNavigate ? opts.onNavigate(CTX.prevId) : CTX.go(CTX.prevId);
+    });
+
     var next = ghostIcon('Next task', CHEVRON_RIGHT);
-    next.addEventListener('click', function () { emit('next-task'); });
+    next.disabled = CTX.nextId == null;
+    next.addEventListener('click', function () {
+      emit('next-task', { id: CTX.nextId });
+      opts.onNavigate ? opts.onNavigate(CTX.nextId) : CTX.go(CTX.nextId);
+    });
 
     nav.appendChild(count);
     nav.appendChild(prev);
     nav.appendChild(next);
 
-    end.appendChild(approve);
-    end.appendChild(reject);
-    end.appendChild(otherWrap);
+    if (showActions) {
+      end.appendChild(approve);
+      end.appendChild(reject);
+      end.appendChild(otherWrap);
+    }
+
     end.appendChild(nav);
 
     row.appendChild(start);
     row.appendChild(end);
-    header.appendChild(row);
+
+    /* Clicking anywhere in the row opens the task — except on a control, so the
+       prev/next arrows still move the preview rather than navigating away.
+       The <a> above is what actually carries the semantics; this is only a
+       larger mouse target. */
+    if (opts.openHref) {
+      row.classList.add('th-row--clickable');
+      row.addEventListener('click', function (e) {
+        if (e.target.closest('button, a')) { return; }
+        titles.click();
+      });
+    }
+
+    container.appendChild(row);
+    return row;
+  }
+
+  window.ApprTaskHeader = { render: render };
+
+  /* Task detail mounts itself: the header is that page's chrome. My tasks
+     calls render() explicitly, into the pane. */
+  function mountPageRow() {
+    var header = document.querySelector('.ga-page-header');
+    if (!header || header.querySelector('.ga-page-header__page-navigation')) { return; }
+    if (!document.querySelector('.mt-panel')) {   /* not the My tasks page */
+      render(header, {});
+    }
   }
 
   document.readyState === 'loading'
-    ? document.addEventListener('DOMContentLoaded', build)
-    : build();
+    ? document.addEventListener('DOMContentLoaded', mountPageRow)
+    : mountPageRow();
 })();

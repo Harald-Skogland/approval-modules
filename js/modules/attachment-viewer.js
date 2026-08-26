@@ -21,14 +21,31 @@
 (function () {
   'use strict';
 
-  var DEFAULT_SRC = 'assets/expense-claim-4907214.pdf';
+  /* One document per type, so an Invoice task no longer shows an expense claim.
+     Rendered from assets/documents/*.source.html — see the README. */
+  var DOCS = {
+    'Invoice':              'assets/documents/invoice.pdf',
+    'Expense claim':        'assets/documents/expense-claim.pdf',
+    'Purchase order':       'assets/documents/purchase-order.pdf',
+    'Timesheet':            'assets/documents/timesheet.pdf',
+    'Absence':              'assets/documents/absence.pdf',
+    'Voucher':              'assets/documents/voucher.pdf',
+    'Supplier information': 'assets/documents/supplier-information.pdf'
+  };
+  var FALLBACK = 'assets/documents/invoice.pdf';
 
   class AttachmentViewer extends window.ApprModule {
 
     static get observedAttributes() { return ['label', 'collapsed', 'src']; }
 
     get defaultLabel() { return 'Attachment viewer'; }
-    get src() { return this.hasAttribute('src') ? this.getAttribute('src') : DEFAULT_SRC; }
+
+    /* An explicit src always wins; otherwise the open task's type picks it. */
+    get src() {
+      if (this.hasAttribute('src')) { return this.getAttribute('src'); }
+      var t = (window.ApprTask || {}).task;
+      return (t && DOCS[t.documentType]) || FALLBACK;
+    }
 
     secondaryActions() {
       return [{ id: 'download', label: 'Download all attachments' }];

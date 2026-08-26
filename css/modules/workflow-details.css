@@ -9,81 +9,47 @@
    as the nearest match, the same call as the overdue red in my-tasks.css.
    ========================================================================= */
 
-.wd-chain {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+/* ------------------------------- step chain -------------------------------
+   Gaia's .ga-progress-indicator--horizontal does the work now: item borders per
+   state (2px surface-disabled, 4px border-action when current, border-success
+   when completed), icon colours, label and description typography, hover and
+   focus. This replaced a hand-rolled chevron chain with clip-path arrows and
+   raw-scale colours picked off a screenshot — so nothing here is approximated
+   any more.
+
+   What remains is only what the package leaves to the consumer. */
+
+/* .ga-icon ships with NO dimensions in @vsn-ux/gaia-styles — it only sets
+   colour, nested inside components. Every icon wrapper has to size itself.
+   Same trap as the context-selector and the checkbox indicators. */
+.wd-chain .ga-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: var(--ga-size-16);
+  height: var(--ga-size-16);
+}
+.wd-chain .ga-icon svg { width: 100%; height: 100%; display: block; }
+
+/* Items are <button>s, so strip the UA chrome the package does not. */
+.wd-chain .ga-progress-indicator__item {
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  font: inherit;
+  appearance: none;
 }
 
-.wd-step {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 0;
-  min-width: 0;
-  gap: var(--ga-size-spacing-03);
+/* Descriptions wrap rather than clip — they carry the who/what of each step,
+   and a step column is narrow once the pane is in play. */
+.wd-chain .ga-progress-indicator__description { white-space: normal; }
+
+/* Narrow hosting: stack the steps instead of crushing three columns. Gaia's
+   own --vertical variant flips the borders from top to left, which is exactly
+   what is wanted, so switch the class in JS if this proves too crude. */
+@container (max-width: 520px) {
+  .wd-chain { flex-wrap: wrap; }
+  .wd-chain .ga-progress-indicator__item { flex: 1 1 100%; }
 }
-
-/* Chevron/arrow segment. The notch is cut with clip-path so the shape needs no
-   extra markup; the negative margin closes the seam between segments. */
-.wd-seg {
-  display: flex;
-  align-items: center;
-  gap: var(--ga-size-spacing-02);
-  min-width: 0;
-  height: 32px;
-  padding: 0 var(--ga-size-spacing-04) 0 var(--ga-size-spacing-05);
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
-  font-size: var(--ga-text-sm-font-size);
-  line-height: 1;
-  color: var(--ga-color-text-on-action);
-}
-
-.wd-step:first-child .wd-seg {
-  padding-left: var(--ga-size-spacing-04);
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);
-}
-.wd-step:last-child .wd-seg {
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 10px 50%);
-}
-
-.wd-seg__icon  { flex: 0 0 auto; }
-.wd-seg__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--ga-font-weight-semibold); }
-
-/* Segment colours, nearest match to the capture.
-   NOTE --ga-color-green-70 does NOT exist in @vsn-ux/gaia-styles 0.6.11 (it
-   ships green-60); an undefined custom property fails silently, which left
-   this segment unfilled and its cream text invisible. Use the semantic
-   --ga-color-success (= green-60 #448548) instead. */
-.wd-step--done    .wd-seg { background: var(--ga-color-success); }    /* #448548 */
-.wd-step--current .wd-seg { background: var(--ga-color-cyan-70); }    /* #2a6480 */
-.wd-step--future  .wd-seg { background: var(--ga-color-neutral-30);   /* #cccfd7 */
-                            color: var(--ga-color-text-body); }
-
-.wd-caption {
-  margin: 0;
-  padding-right: var(--ga-size-spacing-04);
-  padding-left: var(--ga-size-spacing-05);
-  font-size: var(--ga-text-sm-font-size);
-  line-height: var(--ga-text-sm-line-height);
-  color: var(--ga-color-text-body);
-}
-.wd-step:first-child .wd-caption { padding-left: var(--ga-size-spacing-04); }
-
-/* The current step's caption sits on a tint in the product. The exact tint was
-   not measured; --ga-color-surface-highlight resolves to secondary-30 ->
-   orange-30 (Gaia's brand peach), which is far too loud a guess, so this uses
-   the neutral page surface until it can be measured. */
-.wd-step--current .wd-caption {
-  background: var(--ga-color-surface-page);
-  padding-block: var(--ga-size-spacing-02);
-  border-radius: var(--ga-radius);
-}
-
-.wd-caption__person--italic { font-style: italic; }
 
 /* ------------------------------ started at ------------------------------ */
 

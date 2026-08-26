@@ -8,7 +8,9 @@
      exact in package.json. Never copy this in from another project folder. -->
 <link rel="stylesheet" href="node_modules/@vsn-ux/gaia-styles/src/font/inter.css">
 <link rel="stylesheet" href="node_modules/@vsn-ux/gaia-styles/dist/all.css">
+<link rel="stylesheet" href="css/app-shell.css">
 <link rel="stylesheet" href="css/task-detail.css">
+<link rel="stylesheet" href="css/task-header.css">
 <link rel="stylesheet" href="css/modules/module-shell.css">
 <link rel="stylesheet" href="css/modules/attachment-viewer.css">
 <link rel="stylesheet" href="css/modules/voucher-details.css">
@@ -131,11 +133,16 @@
        title="Drag to resize. Arrow keys to nudge, double-click to reset."><span class="td-splitter__grip" aria-hidden="true"></span></div>
 
   <section class="td-stack" id="stack-right" data-module-stack aria-label="Right module stack">
-    <appr-attachment-viewer data-fill></appr-attachment-viewer>
+    <appr-attachment-viewer></appr-attachment-viewer>
   </section>
 
 </main>
 
+<!-- data.js rebuilds the same seeded 202 tasks as My tasks; task-context.js
+     resolves ?task= and the traversal order. Both must precede the modules. -->
+<script src="js/data.js"></script>
+<script src="js/task-context.js"></script>
+<script src="js/splitter.js"></script>
 <script src="js/modules/module-shell.js"></script>
 <script src="js/task-header.js"></script>
 <script src="js/modules/attachment-viewer.js"></script>

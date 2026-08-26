@@ -35,7 +35,11 @@
 
     static get observedAttributes() { return ['label', 'collapsed', 'provider']; }
 
-    get provider()     { return this.getAttribute('provider') || 'Visma.net Expense'; }
+    get provider() {
+      if (this.hasAttribute('provider')) { return this.getAttribute('provider'); }
+      var t = (window.ApprTask || {}).task;
+      return (t && t.displayApplicationTypeName) || 'the sending system';
+    }
     get defaultLabel() { return 'External editor provided by ' + this.provider; }
 
     secondaryActions() {

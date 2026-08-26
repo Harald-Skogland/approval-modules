@@ -169,9 +169,25 @@
         this._render();
       }
       this._syncMenuState();
+
+      /* Modules read the open task at render time, so when the host points the
+         context at a different task (My tasks' reading pane) they have to
+         rebuild. Collapsed state survives because it lives in an attribute
+         that _render() reads. */
+      if (!this._onTaskChanged) {
+        this._onTaskChanged = function () {
+          if (this._built) { this._render(); this._syncMenuState(); }
+        }.bind(this);
+      }
+      document.addEventListener('appr:task-changed', this._onTaskChanged);
     }
 
-    disconnectedCallback() { this._closeMenu(); }
+    disconnectedCallback() {
+      this._closeMenu();
+      if (this._onTaskChanged) {
+        document.removeEventListener('appr:task-changed', this._onTaskChanged);
+      }
+    }
 
     attributeChangedCallback(name) {
       if (!this._built) { return; }

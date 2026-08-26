@@ -10,15 +10,46 @@
    back as a "missing" detail on a later fidelity pass.
    ========================================================================= */
 
+/* ------------------------------- height ----------------------------------
+   Takes any spare height in its column, even when sharing it with other
+   modules: every other module is flex: 0 0 auto (sized to content), so
+   flex-grow here claims whatever is left over.
+
+   Below 720px it stops giving way and the column scrolls instead — the
+   document needs real estate to be readable, and 720 is roughly double the
+   tallest sibling (workflow-history at 364).
+
+   So: fills when there is room, 720 when there is not. No :only-child branch
+   any more — grow handles both cases, whatever else is in the column. */
+/* NOTE the .appr-module in these selectors — it is load-bearing. The shell sets
+   .appr-module { flex: 0 0 auto } (specificity 0,1,0), which outranks a bare
+   appr-attachment-viewer (0,0,1); without the class the grow is silently
+   dropped and the module sits at exactly its min-height forever. The shell adds
+   that class in connectedCallback, so it is always present. */
+appr-attachment-viewer.appr-module {
+  --am-min-height: 720px;
+  flex: 1 1 auto;
+  height: auto;
+  min-height: var(--am-min-height);
+}
+
+/* Collapsed beats the above: header height only, or the module would sit 720px
+   tall with nothing in it. */
+appr-attachment-viewer.appr-module[collapsed] {
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 0;
+}
+
 appr-attachment-viewer .apm-body { padding: 0; overflow: hidden; }
 
 /* The document keeps its own scroll — that is the browser's PDF viewer, not
-   module chrome. min-height stops it collapsing to nothing when the module
-   shares a stack and there is no spare height to fill. */
+   module chrome. No min-height here any more: the module owns the height, so a
+   floor on the embed would only fight it. */
 .am-embed {
   flex: 1 1 auto;
   width: 100%;
-  min-height: 480px;
+  min-height: 0;
   border: 0;
   display: block;
 }
@@ -36,5 +67,5 @@ appr-attachment-viewer .apm-body { padding: 0; overflow: hidden; }
    Hook for hosting inside My tasks later: a shorter document surface so the
    module can sit in a denser view. The real My tasks placement is NOT
    specified yet — this only stops the module assuming a full-height column. */
-appr-attachment-viewer[compact] .am-embed { height: 320px; }
+appr-attachment-viewer[compact] { --am-min-height: 320px; }
 appr-attachment-viewer[compact] { border: var(--ga-size-border-width-sm) solid var(--ga-color-border-tertiary); }

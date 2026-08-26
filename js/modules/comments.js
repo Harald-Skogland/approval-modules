@@ -28,17 +28,36 @@
 (function () {
   'use strict';
 
-  /* Start empty, as the captured task was — the count in the title then
-     matches the product's "Comments 0" exactly. Added comments are local to
-     the page; nothing is persisted. */
-  var SEED = [];
+  /* data.js gives each task a numberOfComments, so the count in the header is
+     real rather than always zero. The comment BODIES are invented — the
+     captured task had none, so nothing about their layout was observed.
+     Comments added in the page are local; nothing is persisted. */
+  var NOTES = [
+    'Kostnadssted bekreftet mot prosjektbudsjett.',
+    'Mangler vedlegg for taxi — ettersendt på e-post.',
+    'Avklart med leverandør, beløpet stemmer.'
+  ];
+
+  function seed() {
+    var t = (window.ApprTask || {}).task;
+    var n = t ? (t.numberOfComments || 0) : 0;
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      out.push({
+        author: i === 0 ? 'Astrid Moen' : 'Lars Berge',
+        when: (i === 0 ? '21' : '22') + '/08/2026 at 1' + (i + 1) + ':04',
+        text: NOTES[i % NOTES.length]
+      });
+    }
+    return out;
+  }
 
   class Comments extends window.ApprModule {
 
     /* Title carries the count, as the product does. */
     get defaultLabel() { return 'Comments ' + this._count(); }
 
-    _count() { return (this._entries || SEED).length; }
+    _count() { return (this._entries || seed()).length; }
 
     _retitle() {
       var t = this.querySelector('.apm-title');
@@ -46,7 +65,7 @@
     }
 
     renderBody(body) {
-      if (!this._entries) { this._entries = SEED.slice(); }
+      if (!this._entries) { this._entries = seed(); }
 
       this._list = document.createElement('ol');
       this._list.className = 'cm-list';

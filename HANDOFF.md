@@ -74,17 +74,41 @@ That is the durable copy — it survives this folder. Don't re-extract; read it 
 
 ## 5. Files
 
+Shared by BOTH views — if a `js/x.js` is used by both pages, its `css/x.css` must be too. Getting
+this wrong has bitten three times (see §12).
+
 | Path | Notes |
 |---|---|
-| `index.html` | Shell (`ga-page-header` + `ga-breadcrumb`), toolbar, grid mount, footer bar. Lucide SVGs inlined |
-| `css/my-tasks.css` | Grid, toolbar, footer only. Chrome is Gaia's |
-| `js/data.js` | `buildTasks()` — seeded `mulberry32(20260821)`, so the table is identical every reload. `TODAY` is pinned to **21 Aug 2026** to match the capture |
-| `js/my-tasks.js` | `COLUMNS` array (25 entries, real field ids) + grouping / sort / search / selection / actions. One IIFE, no framework |
-| ~~`_ds/gaia-design-system-…/`~~ | **Purged 2026-08-24** — it had been copied from `visma-login/_ds` without sanction. See *Gaia CSS: purged* |
-| `README.md` | What the prototype is, fidelity table, deviations |
+| `css/app-shell.css` | Split layout, splitter, stacks, `--td-*` tokens, page-header no-bg-fill |
+| `css/task-header.css` | The task-header component |
+| `css/modules/module-shell.css` | Module chrome |
+| `js/splitter.js` | Initialises every `.td-split`; no element ids |
+| `js/task-context.js` | Resolves `?task=`, the traversal order, and `setTask()` for the pane |
+| `js/task-header.js` | `ApprTaskHeader.render(container, opts)` — page row or in-pane |
+| `js/modules/module-shell.js` | `ApprModule` base class; exports `ApprIcon`, `ApprPlaceMenu` |
+| `js/data.js` | `buildTasks()` — seeded `mulberry32(20260821)`, `TODAY` pinned to 21 Aug 2026 |
 
-`TODAY` is hardcoded on purpose. If you unpin it to `new Date()`, the Overdue/Later split drifts and
-the 198/4 shape stops matching staging.
+My tasks
+
+| Path | Notes |
+|---|---|
+| `index.html` | Shell, toolbar (incl. the Preview switch), grid + reading pane in one `.td-split` |
+| `css/my-tasks.css` | Grid, toolbar, footer, reading pane |
+| `js/my-tasks.js` | Grid behaviour, row click → open or preview, `visibleOrder()` handover |
+
+Task detail
+
+| Path | Notes |
+|---|---|
+| `task-detail.html` | Shell, two module stacks either side of the splitter |
+| `css/task-detail.css` | Context-selector trigger, stack edge insets |
+| `js/task-detail.js` | Host glue only — module events |
+
+Modules — `js/modules/*.js` + `css/modules/*.css`, six of them: `attachment-viewer`,
+`voucher-details`, `workflow-details`, `workflow-history`, `comments`, `external-editor`.
+
+Assets — `assets/documents/*.pdf`, one per document type, each with the `.source.html` it was
+rendered from (headless Chrome). Regenerate rather than hand-edit the binary.
 
 ## 6. Traps already hit — don't rediscover them
 
@@ -208,3 +232,38 @@ against `harald-skogland.github.io` and 404.
 
 Known gap: nothing on My tasks links to Task detail (row click is still a stub toast), so a visitor
 landing on the deployed site has to type the `task-detail.html` URL.
+
+---
+
+## 12. The pattern that keeps biting
+
+Component code shared between views while its CSS or tokens stay in a page-specific file. It fails
+SILENTLY every time, because an undefined custom property is invalid at computed-value time and the
+whole declaration is simply dropped — no error anywhere.
+
+1. `--td-*` layout tokens lived in `task-detail.css`; My tasks' reading pane got
+   `grid-template-columns: var(--td-left) var(--td-splitter-hit) 1fr` with an empty middle var, so
+   the grid collapsed to one column and the pane stacked underneath it.
+2. The page-header no-bg-fill rule was COPIED into both page stylesheets, so the two drifted and My
+   tasks kept a white header bar after Task detail lost it.
+3. `task-header`'s CSS stayed in `task-detail.css` after the component was reused in the pane, so
+   the pane's header ran with no component CSS at all — counter not flexed, title and subtitle both
+   falling back to 16px.
+
+Rule: **shared JS means shared CSS.** `css/app-shell.css`, `css/task-header.css` and
+`css/modules/module-shell.css` exist for exactly this reason.
+
+### Gaia components hand the glyph to the markup
+
+Three of them so far ship a positioned, coloured, state-toggled *container* and no icon:
+`.ga-checkbox__marker__indicator-checked` / `-indeterminate`, `.ga-switch__check-icon`, and
+`.ga-icon` anywhere (which carries colour but **no dimensions** in this package). Expect it as the
+norm. The purged `_ds` port drew these itself, which is why the markup looked fine before the npm
+swap.
+
+### getComputedStyle is unreliable here
+
+Under browser automation it has twice misreported Gaia's nested state rules — the checkbox fill and
+the switch's checked state both read as unapplied while rendering correctly. An inline `#1f4e66`
+once read back as `rgba(0,0,0,0)`. **Verify Gaia state styling from a screenshot**, not a computed
+value. Geometry (`getBoundingClientRect`) has been trustworthy.

@@ -1,0 +1,98 @@
+/* =========================================================================
+   task-header — the row carrying a task's identity, actions and traversal.
+
+   Extracted from css/task-detail.css on 2026-08-26. It had stayed there after
+   the component was reused in My tasks' reading pane, and My tasks does not
+   load that file — so the pane's header was running with NO component CSS at
+   all: .th-counter was display:block (hence no gap between the arrows), and
+   the title and subtitle both fell back to 16px. Rendered by
+   js/task-header.js in two hosts, so the CSS belongs beside it, not in a
+   page file. Third time this pattern has bitten: --td-* tokens, the
+   page-header background, now this.
+   ========================================================================= */
+
+/* Outer edges hug the viewport; inner edges stay flush against the splitter,
+   so the gutter between the columns is the splitter's own 16px and not 32. */
+#stack-left  { padding-left: var(--ga-size-spacing-05); padding-right: 0; }
+#stack-right { padding-right: var(--ga-size-spacing-05); padding-left: 0; }
+
+/* (the no-bg-fill rule for this row lives in css/app-shell.css) */
+
+/* Keep the row from stretching in the body's flex column. */
+.th-row { flex: 0 0 auto; }
+
+.th-titles { min-width: 0; }
+
+.th-title {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ga-text-xl-font-size);       /* 18px */
+  line-height: var(--ga-text-xl-line-height);   /* 24px */
+  font-weight: var(--ga-font-weight-normal);
+  color: var(--ga-color-text-headings);
+}
+/* Only the document type is bold, as in the product. */
+.th-title strong { font-weight: var(--ga-font-weight-bold); }
+
+.th-subtitle {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ga-text-sm-font-size);       /* 12px */
+  line-height: var(--ga-text-sm-line-height);
+  color: var(--ga-color-text-body-secondary);
+}
+
+/* ------------------------------- Other... -------------------------------- */
+
+.th-other { position: relative; display: flex; align-items: center; }
+
+/* The chevron sits after the label inside the Gaia button. */
+.th-other__btn { gap: var(--ga-size-spacing-02); }
+
+/* Same treatment as the module kebab menus: fixed, placed by ApprPlaceMenu,
+   and [hidden] asserted because Gaia sets `display` on these classes. */
+.th-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  min-width: 200px;
+}
+.th-menu[hidden],
+.th-menu .ga-menu__item[hidden] { display: none; }
+
+.th-menu .ga-menu__item {
+  width: 100%;
+  border: 0;
+  background-color: transparent;
+  font: inherit;
+  align-items: center;
+  transition: background-color var(--ga-transition-hover, 120ms ease);
+}
+.th-menu .ga-menu__item:hover,
+.th-menu .ga-menu__item:active { background-color: var(--ga-color-surface-action-hover-2); }
+.th-menu .ga-menu__item:hover .ga-menu__item-label { color: var(--ga-color-text-action-hover); }
+.th-menu .ga-menu__item:focus-visible {
+  background-color: var(--ga-color-surface-action-hover-2);
+  outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus);
+  outline-offset: calc(-1 * var(--ga-size-border-width-md));
+}
+
+/* ----------------------------- task counter ------------------------------ */
+
+.th-counter {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-02);
+  margin-left: var(--ga-size-spacing-04);
+}
+
+.th-counter__label {
+  white-space: nowrap;
+  font-size: var(--ga-text-sm-font-size);
+  color: var(--ga-color-text-body-secondary);
+}

@@ -38,10 +38,12 @@ body {
 
 /* ----------------------------- app shell ------------------------------ */
 
-.ga-page-header {
-  flex: 0 0 auto;
-  padding: var(--ga-size-spacing-04) var(--ga-size-spacing-05);
-}
+/* No inline padding here: the Gaia package already pads
+   .ga-page-header__global-navigation by 12px/16px, so setting it again on the
+   wrapper double-padded the bar to 32px and pushed the header out of line with
+   the toolbar and the grid. */
+.ga-page-header { flex: 0 0 auto; }
+
 
 .ga-page-header__global-navigation {
   display: flex;
@@ -118,7 +120,10 @@ body {
 .tasks-grid {
   flex: 1 1 auto;
   min-height: 0;
-  margin: 0 var(--ga-size-spacing-05);
+  /* No horizontal margin: the inset comes from .mt-grid-pane now. This used to
+     carry `margin: 0 16px` from before the grid was wrapped in a pane, which
+     doubled up to 32px and left the grid out of line with the header. */
+  margin: 0;
   background: var(--ga-color-surface-primary);
   border: 1px solid var(--ga-color-border-tertiary);
   border-radius: var(--ga-radius);
@@ -159,7 +164,9 @@ body {
   white-space: nowrap;
 }
 
-.tg-hc:hover { background: rgba(19, 52, 69, 0.04); }
+/* Gaia's hover surface, not a hand-mixed alpha. Header cells are clickable
+   (they sort), so they get the same hover as any other interactive item. */
+.tg-hc:hover { background: var(--ga-color-surface-action-hover-2); }
 .tg-hc--num { justify-content: flex-end; }
 .tg-hc--plain { cursor: default; }
 .tg-hc--plain:hover { background: none; }
@@ -181,7 +188,23 @@ body {
   color: var(--tg-ink);
 }
 
-.tg-row:hover { background: var(--ga-color-surface-page); }
+/* HOVER — Gaia's surface-action-hover-2 (#fae0ce). The package uses this one
+   token for hover on every row-like interactive item: .ga-side-navigation__item,
+   .ga-dropdown__item, .ga-menu__item and .ga-card. Rows are clickable here
+   (they open or preview a task), so they belong to that set. This used to be
+   --ga-color-surface-page, which is the PAGE background rather than a hover
+   surface — hovering made a row blend into the page instead of standing out.
+
+   Suppressed on rows that already carry a state fill, following Gaia's own
+   `.ga-card:hover:not(.ga-card--selected)` precedent: otherwise hover erases
+   the active/selected colour exactly when you are pointing at it.
+
+   Row INK is deliberately not changed on hover. Gaia's dropdown item shifts to
+   text-action-hover, but grid text is AG Grid's 13px #181d1f by decision #7
+   in HANDOFF.md, and recolouring it here would fight that. */
+.tg-row:not(.tg-row--active):not(.tg-row--selected):hover {
+  background: var(--ga-color-surface-action-hover-2);
+}
 .tg-row--selected { background: var(--ga-color-surface-selected, #eaf1f5); }
 .tg-row--leaving { opacity: 0; transition: opacity var(--ga-duration-fast, 0.1s) linear; }
 
@@ -237,7 +260,12 @@ body {
 
 /* overdue marker — the app uses the raw red scale token here, not a
    semantic text-error token (which resolves to the heading ink) */
-.tg-overdue-icon { flex: 0 0 auto; color: var(--ga-color-red-60); }
+/* Overdue marker. Gaia's warning glyph in icon/warning (#bb5822) — the
+   user's call 2026-08-25, replacing Lucide circle-alert in the raw
+   --ga-color-red-60 that staging uses. Note this means overdue now renders in
+   the warning colour rather than an error colour, so if a distinct
+   "soon overdue" state is added later it will need a different signal. */
+.tg-overdue-icon { flex: 0 0 auto; color: var(--ga-color-icon-warning); }
 
 .tg-state { color: var(--tg-ink); overflow: hidden; text-overflow: ellipsis; }
 
@@ -268,7 +296,7 @@ body {
   text-align: left;
 }
 
-.tg-group:hover { background: var(--ga-color-surface-page); }
+.tg-group:hover { background: var(--ga-color-surface-action-hover-2); }
 
 .tg-group__chevron { flex: 0 0 auto; color: var(--ga-color-text-headings); transition: transform var(--ga-duration-fast, 0.1s) ease; }
 .tg-row--collapsed .tg-group__chevron { transform: rotate(-90deg); }
@@ -319,4 +347,224 @@ body {
   border-radius: var(--ga-radius);
   font-size: var(--ga-text-md-font-size);
   box-shadow: var(--ga-shadow-north);
+}
+
+/* ========================== reading pane (My tasks) =======================
+   The grid and the detail panel are the two stacks of the shared .td-split
+   (css/app-shell.css), so the splitter, the hidden scrollbars and the stack
+   behaviour all come from there. This block is only what is specific to
+   hosting the grid in a stack, and the panel's own slim bar.
+
+   Closed by default: the list is the working surface, the pane is opt-in.
+   ========================================================================= */
+
+/* Closed state — the grid takes the whole width and the splitter is gone.
+   Driven by a class on <body> rather than the split element, so the toolbar
+   button and the layout cannot disagree. */
+body:not(.mt-preview) .mt-panel,
+body:not(.mt-preview) #splitter { display: none; }
+body:not(.mt-preview) .mt-split { grid-template-columns: 1fr; }
+
+/* The grid pane is a stack, but the grid manages its own scrolling, so this
+   one must NOT scroll or pad like a module stack. 16px either side, matching
+   the toolbar and the header. */
+.mt-grid-pane {
+  /* 8px above the grid, 16px either side. Safe as padding here because this
+     pane does not scroll (overflow: hidden, the grid scrolls itself) — unlike
+     the module stacks, where a top padding sat inside the scroll area and left
+     blank space above the first module. */
+  padding: var(--ga-size-spacing-03) var(--ga-size-spacing-05) 0;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* With the pane open, the grid's right edge sits flush against the splitter so
+   the gutter is the splitter's own 16px — matching Task detail. Keeping 16px
+   here as well would make it 32 and read as a gap rather than a divider. The
+   right-hand 16px from the viewport is then the panel's. */
+body.mt-preview .mt-grid-pane { padding-right: 0; }
+
+.mt-panel {
+  padding-left: 0;
+  /* Needed for the @container query below — without a container-type the query
+     never matches anything and the rule is silently dead. */
+  container-type: inline-size;
+}
+
+.mt-panel {
+  /* Modules are the padded content here, as in Task detail. */
+  padding: 0 var(--ga-size-spacing-05) var(--ga-size-spacing-05) 0;
+  gap: var(--ga-size-spacing-05);
+}
+
+/* ------------------------------ panel header ------------------------------
+   Holds the same task header Task detail shows (rendered by
+   js/task-header.js). It has to survive a much narrower column than the page
+   row does, so it wraps instead of squashing: title on one line, the action
+   cluster on the next when there is not room for both. */
+.mt-panel__header { flex: 0 0 auto; }
+
+.mt-panel__header .th-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ga-size-spacing-03);
+  /* No padding here — the clickable block below owns it, and two rules setting
+     padding on the same element at equal specificity would be decided by source
+     order alone. */
+}
+
+/* ---------------------------- clickable header ----------------------------
+   The header is the route to the full task view (the 'Open full view' button
+   was removed 2026-08-26). The title block is a real <a>; the row-level
+   handler in task-header.js only widens the hit area, and skips clicks that
+   land on a control so prev/next still move the preview. */
+.mt-panel__header .th-row--clickable {
+  padding: var(--ga-size-spacing-05);     /* 16px */
+  border-radius: var(--ga-radius);
+  cursor: pointer;
+  transition: background-color var(--ga-transition-hover, 120ms ease);
+}
+
+.mt-panel__header .th-row--clickable:hover {
+  background-color: var(--ga-color-surface-action-hover-2);
+}
+
+/* The link fills its half of the row so the whole title area is the target,
+   and inherits ink rather than turning link-blue — it is a heading first. */
+.mt-panel__header .th-titles--link {
+  display: block;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Keyboard users get the ring on the link itself, since that is what is
+   focusable — the row is not in the tab order. */
+.mt-panel__header .th-titles--link:focus-visible {
+  outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--ga-radius);
+}
+
+/* Arrows must not inherit the row's pointer affordance. */
+.mt-panel__header .th-row--clickable button { cursor: pointer; }
+
+/* Let either cluster take the full width once wrapped. */
+.mt-panel__header .th-start { flex: 1 1 auto; min-width: 0; }
+.mt-panel__header .th-end   { flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; }
+
+/* 8px between the prev / next buttons (and the counter label), up from the
+   component's default 4px. Scoped to the pane — Task detail's own header still
+   uses 4px, so the two hosts differ here. Worth aligning if it looks off. */
+.mt-panel__header .th-counter { gap: var(--ga-size-spacing-03); }
+
+/* The counter is the first thing worth dropping in a narrow pane — the arrows
+   still work, and the position is also shown by the highlighted row. */
+@container (max-width: 560px) {
+  .mt-panel__header .th-counter__label { display: none; }
+}
+
+/* Empty state before a row has been picked. */
+.mt-panel--empty .appr-module { display: none; }
+.mt-panel__hint {
+  margin: 0;
+  padding: var(--ga-size-spacing-06) var(--ga-size-spacing-05);
+  border: var(--ga-size-border-width-sm) dashed var(--ga-color-border-tertiary);
+  border-radius: var(--ga-radius);
+  text-align: center;
+  font-size: var(--ga-text-md-font-size);
+  color: var(--ga-color-text-body-secondary);
+}
+body:not(.mt-preview) .mt-panel__hint,
+.mt-panel:not(.mt-panel--empty) .mt-panel__hint { display: none; }
+
+/* ACTIVE vs SELECTED — two different things, per the user 2026-08-26:
+     active   = the item you are looking at (previewed in the pane). Not
+                selected by definition.
+     selected = ticked with the checkbox; drives the footer totals.
+
+   Active uses utility/teal-accent (#ecf5f4). Note this sits very close to
+   surface-selected (green-10, #eef5ee) — six units apart in blue — so the two
+   fills are nearly indistinguishable side by side. That was accepted
+   deliberately rather than overlooked; the ticked checkbox is what tells them
+   apart. Do not "fix" it by inventing a different colour. */
+.tg-row--active { background: var(--ga-color-utility-teal-accent); }
+
+/* A row can be both. Selection wins, so a ticked row keeps its own fill even
+   while it is the active one. Stated as a combined selector rather than relying
+   on source order, so neither rule moving can flip the outcome. */
+.tg-row--selected.tg-row--active { background: var(--ga-color-surface-selected); }
+
+/* Preview switch. Gaia's .ga-switch carries every state itself, so this only
+   places it in the toolbar and sizes the check glyph the package leaves to the
+   markup. (The old button needed a hand-rolled aria-pressed style; the switch
+   does not.) */
+.mt-preview-switch {
+  flex: 0 0 auto;
+  align-items: center;
+  cursor: pointer;
+}
+
+.mt-preview-switch .ga-switch__label {
+  font-size: var(--ga-text-md-font-size);
+  line-height: 1;
+  color: var(--ga-color-text-body);
+  cursor: pointer;
+}
+
+/* The glyph inside __check-icon — the package positions the container but
+   ships no icon.
+
+   It also sets `top: 3px`, which only centres an ~18px glyph in the 24px
+   track (3 + 9 = 12). Ours is 12px, so it sat 2px high — measured: track
+   centre 92, icon centre 90, while the knob was dead centre. Centre it from
+   the middle instead, so it stays right whatever size the glyph is.
+   `left: 6px` from the package is kept — that is the horizontal placement,
+   which is correct. */
+.mt-preview-switch .ga-switch__check-icon {
+  top: 50%;
+  transform: translateY(-50%);
+  line-height: 0;
+}
+
+/* --------------------------- checkbox indicators -------------------------
+   Gaia's .ga-checkbox__marker is a 16x16 box that expects two children —
+   .ga-checkbox__marker__indicator-checked and ...-indeterminate — and toggles
+   them with `display` from the native input's :checked / :indeterminate state.
+   The marker sets `color: #fff`, so the glyphs inherit white via currentColor.
+
+   Ours were EMPTY, so a checked box rendered as a solid surface-action square
+   with no tick in it. (The purged port drew the tick itself; the real package
+   delegates it to the markup — one more port-vs-package difference.)
+
+   This only centres them; visibility is Gaia's job, not ours.
+   ========================================================================= */
+.ga-checkbox__marker__indicator-checked,
+.ga-checkbox__marker__indicator-indeterminate {
+  /* `display` is owned by Gaia (none -> block), so lay out with grid placement
+     rather than flex, which would need display:flex and fight that toggle. */
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  line-height: 0;
+}
+
+/* The checked / indeterminate FILL, restated.
+   Gaia already declares this — `.ga-checkbox__native:checked ~ .ga-checkbox__marker
+   { background-color: var(--ga-color-surface-action) }` — and it works on a
+   freshly created checkbox, including one appended into the very same grid
+   cell. It does NOT get applied to the instances the grid renders via
+   innerHTML: the selector matches (verified with .matches()), the token
+   resolves (#1f4e66 all the way up the tree), disabling every one of our
+   stylesheets changes nothing, and cloning the element makes it work again.
+   A style-invalidation quirk somewhere between innerHTML and the `~`
+   combinator, not something in our CSS.
+
+   So the fill is asserted here instead of relying on that rule. DO NOT delete
+   these as duplicates — without them a ticked box is an empty outline. */
+.ga-checkbox__native:checked ~ .ga-checkbox__marker,
+.ga-checkbox__native:indeterminate ~ .ga-checkbox__marker {
+  background-color: var(--ga-color-surface-action);
 }

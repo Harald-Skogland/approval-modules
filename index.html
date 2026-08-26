@@ -8,7 +8,16 @@
      exact in package.json. Never copy this in from another project folder. -->
 <link rel="stylesheet" href="node_modules/@vsn-ux/gaia-styles/src/font/inter.css">
 <link rel="stylesheet" href="node_modules/@vsn-ux/gaia-styles/dist/all.css">
+<link rel="stylesheet" href="css/app-shell.css">
 <link rel="stylesheet" href="css/my-tasks.css">
+<link rel="stylesheet" href="css/task-header.css">
+<link rel="stylesheet" href="css/modules/module-shell.css">
+<link rel="stylesheet" href="css/modules/attachment-viewer.css">
+<link rel="stylesheet" href="css/modules/voucher-details.css">
+<link rel="stylesheet" href="css/modules/workflow-details.css">
+<link rel="stylesheet" href="css/modules/workflow-history.css">
+<link rel="stylesheet" href="css/modules/comments.css">
+<link rel="stylesheet" href="css/modules/external-editor.css">
 </head>
 <body>
 
@@ -85,8 +94,23 @@
 
   <label class="ga-checkbox">
     <input class="ga-checkbox__native" type="checkbox" id="current-company">
-    <span class="ga-checkbox__marker"></span>
+    <span class="ga-checkbox__marker"><span class="ga-checkbox__marker__indicator-checked"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span class="ga-checkbox__marker__indicator-indeterminate"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg></span></span>
     <span class="ga-checkbox__label">Current company</span>
+  </label>
+
+  <!-- Gaia switch. The contract is a bare `input` (48x24, opacity 0) driving
+       __marker > __check-icon + __slider via `~`, then the text in __label.
+       __check-icon is an empty container in the package — it needs the glyph
+       supplied, exactly like the checkbox indicators. -->
+  <label class="ga-switch mt-preview-switch" title="Show the detail panel beside the list">
+    <input type="checkbox" id="preview-toggle">
+    <span class="ga-switch__marker">
+      <span class="ga-switch__check-icon">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </span>
+      <span class="ga-switch__slider"></span>
+    </span>
+    <span class="ga-switch__label">Preview</span>
   </label>
 
   <div class="mt-columns">
@@ -98,16 +122,48 @@
   </div>
 </div>
 
-<!-- =============================== GRID =============================== -->
-<div class="tasks-grid" id="grid">
-  <div class="tg-scroll" id="tg-scroll">
-    <div class="tg-inner" id="tg-inner">
-      <div class="tg-header" id="tg-header" role="row"></div>
-      <div class="tg-body" id="tg-body" role="rowgroup"></div>
+<!-- ==================== GRID + READING PANE ====================
+     The grid and the detail panel sit either side of the same splitter the
+     Task detail view uses (js/splitter.js, css/app-shell.css). The panel holds
+     one module stack marked [data-module-stack] — the whole contract a module
+     needs — so the six modules mount here unchanged.
+
+     data-split-default="62" opens the pane narrower than half, since the list
+     is the working surface and the pane is a preview.
+     ============================================================= -->
+<main class="td-split mt-split" id="split" data-split-default="62">
+
+  <section class="td-stack mt-grid-pane" id="stack-left">
+    <div class="tasks-grid" id="grid">
+      <div class="tg-scroll" id="tg-scroll">
+        <div class="tg-inner" id="tg-inner">
+          <div class="tg-header" id="tg-header" role="row"></div>
+          <div class="tg-body" id="tg-body" role="rowgroup"></div>
+        </div>
+      </div>
+      <div class="tg-empty" id="tg-empty" hidden>No tasks match your search.</div>
     </div>
-  </div>
-  <div class="tg-empty" id="tg-empty" hidden>No tasks match your search.</div>
-</div>
+  </section>
+
+  <div class="td-splitter" id="splitter"
+       role="separator" aria-orientation="vertical" aria-label="Resize panels"
+       aria-valuemin="0" aria-valuemax="100" aria-valuenow="62" tabindex="0"
+       title="Drag to resize. Arrow keys to nudge, double-click to reset."><span class="td-splitter__grip" aria-hidden="true"></span></div>
+
+  <aside class="td-stack mt-panel" id="stack-right" data-module-stack aria-label="Task detail panel">
+    <!-- The task header, the same one Task detail shows, rendered here by
+         js/task-header.js. Replaced the slim bar (title + Open full view + X)
+         on 2026-08-25; the X is gone, the Preview toggle closes the pane. -->
+    <div class="mt-panel__header" id="panel-header"></div>
+
+    <appr-workflow-details data-padded></appr-workflow-details>
+    <appr-voucher-details data-padded></appr-voucher-details>
+    <appr-workflow-history data-padded></appr-workflow-history>
+    <appr-comments data-padded></appr-comments>
+    <appr-external-editor data-padded></appr-external-editor>
+    <appr-attachment-viewer></appr-attachment-viewer>
+  </aside>
+</main>
 
 <!-- ============================ FOOTER BAR ============================ -->
 <div class="mt-footer">
@@ -127,6 +183,16 @@
 <div class="mt-toast" id="toast" hidden></div>
 
 <script src="js/data.js"></script>
+<script src="js/task-context.js"></script>
+<script src="js/splitter.js"></script>
+<script src="js/modules/module-shell.js"></script>
+<script src="js/task-header.js"></script>
+<script src="js/modules/attachment-viewer.js"></script>
+<script src="js/modules/voucher-details.js"></script>
+<script src="js/modules/workflow-details.js"></script>
+<script src="js/modules/workflow-history.js"></script>
+<script src="js/modules/comments.js"></script>
+<script src="js/modules/external-editor.js"></script>
 <script src="js/my-tasks.js"></script>
 </body>
 </html>
