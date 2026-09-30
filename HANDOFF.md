@@ -7,9 +7,9 @@ Last session: **2026-09-30**. Earlier sections below date from 2026-08-21/24 unl
 
 ---
 
-## 0. Resume here — 2026-09-30 session (continue 2026-10-01)
+## 0. Resume here — 2026-09-30 / 2026-10-01 sessions
 
-### Work on branch `workflow-details-figma` (not merged, not pushed)
+### Work on branch `workflow-details-figma` (pushed to origin, not merged to `main`)
 
 Three commits on top of `main`: `54a5e42` Workflow details rebuild, `696b14f` menu-row icons, then
 the commit "Add full-width areas and a layout-map module menu to Task detail", which holds
@@ -33,20 +33,20 @@ everything below — built and browser-verified:
   width section headers, Place at top/bottom rows. A copy of the sections-menu version is only in
   the session scratchpad — gone after the session; recover from memory of this note if wanted.
 
-### Next — asked for by the user, NOT started
+### Done 2026-10-01 — rearrange menu split out (built, browser-verified, committed)
 
-1. **Give the rearrange (layout-map) menu a header.**
-2. **Make the rearrange menu a separate item opened from the context menu** — the context menu gets
-   an entry that opens the map, instead of the map being inline in it.
-3. **Change the label to "Click here to move".**
-
-Open before building (ask, don't assume):
-- Header text for the rearrange menu?
-- Label of the context-menu entry that opens it, and its icon (every row has a leading icon)?
-- Does "Click here to move" replace the **"Move here"** slot label? (Assumed, unconfirmed.)
-- How the rearrange menu opens: replaces the context menu in place, or a submenu beside it? Back
-  button / Escape behaviour?
-- After a move the menu reopens today — should that be the rearrange menu or the context menu?
+- On Task detail the context menu shows ONE move row, **"Rearrange modules"** (Lucide `move`), then
+  the module's own actions. Choosing it swaps the menu IN PLACE for the **rearrange menu**: Gaia
+  section header (`.ga-menu__title`) "Rearrange modules" over the layout map, nothing else.
+- The slot label is now **"Click here to move"** (screen readers: "Move to Left column, position 2").
+- After a move, the **rearrange** menu reopens on the moved module. Opening the ⋮ trigger always
+  starts at the context menu. Escape / click outside closes either.
+- Decided by me under "just go ahead" (user may revise): the icon, the row label matching the
+  header, in-place swap (no back button). The user wrote the header as "Rarrange modules" — built
+  as "Rearrange modules", assumed a typo.
+- My tasks unchanged: plain Move up / Move down rows.
+- Comments header reads **"Comments - <n>"**; its rearrange-map block shows plain "Comments"
+  (new `mapLabel` getter on the shell, defaults to the header title).
 
 ### Also outstanding from the 2026-09-30 UX review
 

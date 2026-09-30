@@ -31,14 +31,18 @@
      references #stack-left, .td-split or any page id, so the same element
      works in My tasks by marking a container there the same way.
 
-     LAYOUT MAP (Task detail only, 2026-09-30). A host that also marks an
-     ancestor [data-module-frame], holding [data-full-area="top"] and
-     [data-full-area="bottom"], gets a live miniature of the page in place of
-     the move rows: top area, left and right columns (at their real width
-     ratio), bottom area. Empty areas are still drawn, as targets. Pointing
-     at a spot shows a "Move here" slot that follows the cursor and pushes
-     the other blocks aside; clicking it moves the module there, animated,
-     and the menu reopens on the moved module. Arrow keys + Enter do the same
+     REARRANGE MENU (Task detail only). A host that also marks an ancestor
+     [data-module-frame], holding [data-full-area="top"] and
+     [data-full-area="bottom"], gets ONE move row in the context menu —
+     "Rearrange modules" (Lucide `move`) — in place of the move rows
+     (2026-10-01). Choosing it swaps the menu, in place, for the rearrange
+     menu: a "Rearrange modules" header over a live miniature of the page —
+     top area, left and right columns (at their real width ratio), bottom
+     area. Empty areas are still drawn, as targets. Pointing at a spot shows
+     a "Click here to move" slot that follows the cursor and pushes the other
+     blocks aside; clicking it moves the module there, animated, and the
+     REARRANGE menu reopens on the moved module, so the user can keep going.
+     Escape or a click outside closes it. Arrow keys + Enter do the same
      from the keyboard. The module's own block stays put, highlighted, and
      the slots either side of it (which would not move it) show nothing.
      PROJECT-BUILT — Gaia has no such component; user gave free rein.
@@ -46,6 +50,7 @@
 
    SUBCLASS API
      get defaultLabel()      header title when no label attribute is set
+     get mapLabel()          block name in the rearrange map (default: label)
      renderBody(container)   fill the module body; called on (re)render
      secondaryActions()      [{ id, label, icon? }] shown below the menu
                              divider. icon takes an ICONS name or a Lucide
@@ -79,7 +84,10 @@
     'arrow-up':          { paths: ['m5 12 7-7 7 7', 'M12 19V5'] },
     'arrow-down':        { paths: ['M12 5v14', 'm19 12-7 7-7-7'] },
     'arrow-left':        { paths: ['m12 19-7-7 7-7', 'M19 12H5'] },
-    'arrow-right':       { paths: ['M5 12h14', 'm12 5 7 7-7 7'] }
+    'arrow-right':       { paths: ['M5 12h14', 'm12 5 7 7-7 7'] },
+    /* "Rearrange modules" (2026-10-01), verified against lucide-static 1.48.0. */
+    'move':              { paths: ['M12 2v20', 'm15 19-3 3-3-3', 'm19 9 3 3-3 3', 'M2 12h20',
+                                   'm5 9-3 3 3 3', 'm9 5 3-3 3 3'] }
   };
 
   /* Menu rows are single-line and 36px tall, so 16px is the icon box —
@@ -285,6 +293,9 @@
 
     get defaultLabel() { return 'Module'; }
     get label()        { return this.getAttribute('label') || this.defaultLabel; }
+    /* Name on the module's block in the rearrange map. Defaults to the header
+       title; a module whose title carries live data (a count) overrides it. */
+    get mapLabel()     { return this.label; }
     get collapsed()    { return this.hasAttribute('collapsed'); }
 
     renderBody() {}                    /* override */
@@ -377,6 +388,17 @@
         this._menu.appendChild(this._menuItem(m[0], m[1], m[2]));
       }, this);
 
+      /* Framed hosts: one row that opens the rearrange menu, which is the
+         same element in its other mode — header + map, nothing else. */
+      this._menu.appendChild(this._menuItem('rearrange', 'Rearrange modules', 'move'));
+
+      this._mapTitle = document.createElement('div');
+      this._mapTitle.className = 'ga-menu__title';
+      this._mapTitle.setAttribute('role', 'presentation');
+      this._mapTitle.textContent = 'Rearrange modules';
+      this._mapTitle.hidden = true;
+      this._menu.appendChild(this._mapTitle);
+
       this._mapWrap = document.createElement('div');
       this._mapWrap.className = 'apm-map-wrap';
       this._mapWrap.hidden = true;
@@ -454,10 +476,12 @@
 
     _positionMenu() { placeMenu(this._menuBtn, this._menu); }
 
-    _openMenu() {
+    /* mode: 'context' (default) or 'rearrange'. */
+    _openMenu(mode) {
       /* Re-opening an open menu would register its listeners twice and leak
          the first set. */
       this._closeMenu();
+      this._mode = mode || 'context';
       this._syncMenuState();
       this._menu.hidden = false;
       this._positionMenu();
@@ -544,10 +568,14 @@
       if (!this._items) { return; }
       var p = this._position();
       var framed = !!(p && p.frame);
+      var rearrange = framed && this._mode === 'rearrange';
 
-      this._mapWrap.hidden = !framed;
-      this._menu.classList.toggle('apm-menu--map', framed);
-      if (framed) { this._renderMap(p); }
+      this._items.rearrange.hidden = !framed || rearrange;
+      this._mapTitle.hidden = !rearrange;
+      this._mapWrap.hidden = !rearrange;
+      this._menu.classList.toggle('apm-menu--map', rearrange);
+      if (rearrange) { this._renderMap(p); }
+      else { this._map = null; }
 
       var col = p && !framed ? p.stacks.indexOf(p.stack) : -1;
       this._items.up.hidden    = framed || !p || p.index <= 0;
@@ -556,15 +584,26 @@
       this._items.right.hidden = framed || col < 0 || col >= p.stacks.length - 1;
 
       (this._extras || []).forEach(function (a) {
-        this._items[a.id].hidden = false;
+        this._items[a.id].hidden = rearrange;
       }, this);
 
       this._tidySeparators();
     }
 
+    /* Swap the open context menu for the rearrange menu, in place. Focus goes
+       to the map so the keyboard can drive it straight away. */
+    _openRearrange() {
+      this._mode = 'rearrange';
+      this._syncMenuState();
+      this._positionMenu();
+      var map = this._mapWrap.querySelector('.apm-map');
+      if (map) { map.focus({ preventScroll: true }); }
+    }
+
     _onMenuItem(action, e) {
       e.stopPropagation();
       if (this._items[action].hidden) { return; }
+      if (action === 'rearrange') { this._openRearrange(); return; }
       this._closeMenu();
 
       var isMove = MOVES.some(function (m) { return m[0] === action; });
@@ -605,7 +644,9 @@
 
       anim.then(function () {
         if (!this.isConnected) { return; }
-        this._openMenu();
+        /* Back to the REARRANGE menu (user's call, 2026-10-01); on a host
+           without a frame this falls back to the plain context menu. */
+        this._openMenu('rearrange');
         var map = focusMap && this._mapWrap.querySelector('.apm-map');
         (map || this._menuBtn).focus({ preventScroll: true });
       }.bind(this));
@@ -636,7 +677,7 @@
       map.setAttribute('role', 'group');
       map.setAttribute('aria-label',
         'Layout. Point at a spot, or use the arrow keys, to choose where to move ' +
-        this.label + '. Click or press Enter to move it.');
+        this.mapLabel + '. Click or press Enter to move it.');
 
       var zones = {};
       function zone(name) {
@@ -649,7 +690,7 @@
           b.className = 'apm-map__block' + (m === self ? ' apm-map__block--self' : '');
           var t = document.createElement('span');
           t.className = 'apm-map__label';
-          t.textContent = m.label || m.localName;
+          t.textContent = m.mapLabel || m.label || m.localName;
           b.appendChild(t);
           z.appendChild(b);
         });
@@ -719,7 +760,7 @@
       this._showDrop(this._isNoop(slot) ? null : slot);
     }
 
-    /* Insert (or move, or remove) the "Move here" slot, and slide the blocks
+    /* Insert (or move, or remove) the "Click here to move" slot, and slide the blocks
        it displaces — FLIP on layout offsets, Gaia's moderate duration. */
     _showDrop(slot) {
       var m = this._map;
@@ -742,12 +783,15 @@
         var z = m.zones[slot.zone].el;
         var drop = document.createElement('div');
         drop.className = 'apm-map__drop';
-        drop.textContent = 'Move here';
+        var dl = document.createElement('span');
+        dl.className = 'apm-map__label';
+        dl.textContent = 'Click here to move';
+        drop.appendChild(dl);
         var zb = z.querySelectorAll('.apm-map__block');
         z.insertBefore(drop, zb[slot.index] || null);
         z.classList.add('apm-map__zone--has-drop');
         m.drop = drop;
-        m.live.textContent = 'Move here: ' + ZONE_NAMES[slot.zone] +
+        m.live.textContent = 'Move to ' + ZONE_NAMES[slot.zone] +
           ', position ' + (slot.index + 1);
       } else {
         m.live.textContent = '';

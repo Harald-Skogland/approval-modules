@@ -202,7 +202,7 @@
    variants, not the classes, since the blocks are not buttons:
      other modules   .ga-button--secondary  white, action border, action ink
      own module      same, filled with --ga-color-surface-selected
-     "Move here"     .ga-button--primary    action fill, on-action ink
+     "Click here to move"  .ga-button--primary  action fill, on-action ink
    No hover states: the blocks are not interactive, the map is. */
 
 .apm-menu.apm-menu--map { width: 22rem; max-height: none; }

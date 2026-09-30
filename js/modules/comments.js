@@ -1,8 +1,9 @@
 /* =========================================================================
    Module — comments   <appr-comments>
 
-   Comments on the document. The count sits in the header title, matching the
-   product's "Comments 0".
+   Comments on the document. The count sits in the header title as
+   "Comments - 2" (user's call, 2026-10-01; the product shows "Comments 0").
+   The rearrange map shows plain "Comments" — see mapLabel.
 
    !! PARTLY INVENTED — NEEDS REVIEW !!
    Observed on 2026-08-24: the panel exists, is titled "Comments 0", and sits
@@ -54,8 +55,11 @@
 
   class Comments extends window.ApprModule {
 
-    /* Title carries the count, as the product does. */
-    get defaultLabel() { return 'Comments ' + this._count(); }
+    /* Title carries the count. */
+    get defaultLabel() { return 'Comments - ' + this._count(); }
+
+    /* No count in the rearrange map (user's call, 2026-10-01). */
+    get mapLabel() { return 'Comments'; }
 
     _count() { return (this._entries || seed()).length; }
 
