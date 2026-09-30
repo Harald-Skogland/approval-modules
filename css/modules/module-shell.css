@@ -108,7 +108,8 @@
    attribute renders open and hidden rows stay visible. */
 .apm-menu[hidden],
 .apm-menu .ga-menu__item[hidden],
-.apm-menu .ga-menu__separator[hidden] { display: none; }
+.apm-menu .ga-menu__separator[hidden],
+.apm-menu .ga-menu__title[hidden] { display: none; }
 
 /* .ga-menu__item is a <button> here, so strip the button chrome. Use the
    background-color longhand, NOT `background: none` — the shorthand also reset
@@ -186,3 +187,131 @@
 /* Modules with their own padded content opt in; the attachment viewer does
    not, because its document fills the module edge to edge. */
 .appr-module[data-padded] .apm-body { padding: var(--ga-size-spacing-05); gap: var(--ga-size-spacing-05); }
+
+/* ------------------------------ layout map --------------------------------
+   PROJECT-BUILT (2026-09-30) — Gaia has no layout-map component; the user
+   gave free rein. Only Gaia tokens are used. See the LAYOUT MAP note at the
+   top of js/modules/module-shell.js for the behaviour.
+
+     top area            full width, always drawn
+     left | right        at the real column width ratio
+     bottom area         full width, always drawn
+
+   Blocks are equal height and named (user's call). They borrow the Gaia
+   BUTTON looks (user's call, 2026-09-30) — the tokens of the button
+   variants, not the classes, since the blocks are not buttons:
+     other modules   .ga-button--secondary  white, action border, action ink
+     own module      same, filled with --ga-color-surface-selected
+     "Move here"     .ga-button--primary    action fill, on-action ink
+   No hover states: the blocks are not interactive, the map is. */
+
+.apm-menu.apm-menu--map { width: 22rem; max-height: none; }
+
+.apm-map-wrap[hidden] { display: none; }
+
+.apm-map {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-size-spacing-02);
+  padding: var(--ga-size-spacing-03);
+  outline: none;
+  border-radius: var(--ga-radius);
+}
+.apm-map:focus-visible {
+  outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus);
+  outline-offset: calc(-1 * var(--ga-size-border-width-md));
+}
+.apm-map--armed { cursor: pointer; }
+
+.apm-map__cols {
+  display: grid;
+  gap: var(--ga-size-spacing-02);
+}
+
+.apm-map__zone {
+  position: relative;               /* offsetParent for the slot maths */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 2px;
+  border-radius: var(--ga-radius);
+  background: var(--ga-color-surface-page);
+}
+.apm-map__zone--empty {
+  border: var(--ga-size-border-width-sm) dashed var(--ga-color-border-tertiary);
+  padding: 1px;
+}
+
+.apm-map__block,
+.apm-map__drop,
+.apm-map__empty {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border-radius: var(--ga-radius);
+  white-space: nowrap;
+}
+
+/* Button metrics and type, from .ga-button in the package: 40px tall
+   (--ga-size-40), 16px inline padding, text-md size and letter-spacing,
+   weight 500. One deliberate difference: .ga-button sets line-height to
+   0.25rem and relies on flex centring; the label here keeps the text-md line
+   height, because it has to clip for the ellipsis and a 4px line box would
+   clip the glyphs too. */
+.apm-map__block,
+.apm-map__drop {
+  min-height: var(--ga-size-40);
+  padding-inline: var(--ga-size-spacing-05);
+  font-size: var(--ga-text-md-font-size);
+  letter-spacing: var(--ga-text-md-letter-spacing);
+  font-weight: var(--ga-font-weight-medium);
+}
+
+.apm-map__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: var(--ga-text-md-line-height);
+}
+
+.apm-map__block {
+  border: var(--ga-size-border-width-sm) solid var(--ga-color-border-action);
+  background: var(--ga-color-surface-primary);
+  color: var(--ga-color-text-action);
+}
+.apm-map__block--self { background: var(--ga-color-surface-selected); }
+
+/* Primary has no border; a transparent one keeps its height equal to the
+   bordered blocks, so nothing jumps when it appears. */
+.apm-map__drop {
+  justify-content: center;
+  border: var(--ga-size-border-width-sm) solid transparent;
+  background: var(--ga-color-surface-action);
+  color: var(--ga-color-text-on-action);
+}
+
+.apm-map__empty {
+  justify-content: center;
+  min-height: var(--ga-size-40);
+  /* Same type as the blocks (button type, user's call 2026-09-30); only the
+     colour stays secondary, so an empty zone reads as a label, not a module. */
+  font-size: var(--ga-text-md-font-size);
+  letter-spacing: var(--ga-text-md-letter-spacing);
+  font-weight: var(--ga-font-weight-medium);
+  line-height: var(--ga-text-md-line-height);
+  color: var(--ga-color-text-body-secondary);
+}
+.apm-map__zone--has-drop .apm-map__empty { display: none; }
+.apm-map__zone--has-drop.apm-map__zone--empty { border-style: solid; border-color: transparent; }
+
+/* Screen-reader announcement of the current slot. */
+.apm-map__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

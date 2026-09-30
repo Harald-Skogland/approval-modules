@@ -3,7 +3,57 @@
 Read this first after a restart. `README.md` documents *what the prototype is*; this file documents
 *where the work stands, what was decided, and what to do next*.
 
-Last session: **2026-08-21** → doc updated **2026-08-24**.
+Last session: **2026-09-30**. Earlier sections below date from 2026-08-21/24 unless marked.
+
+---
+
+## 0. Resume here — 2026-09-30 session (continue 2026-10-01)
+
+### Work on branch `workflow-details-figma` (not merged, not pushed)
+
+Three commits on top of `main`: `54a5e42` Workflow details rebuild, `696b14f` menu-row icons, then
+the commit "Add full-width areas and a layout-map module menu to Task detail", which holds
+everything below — built and browser-verified:
+
+- **Module frame (Task detail only).** `[data-module-frame]` is the one scroll container under the
+  toolbar: top full-width area `[data-full-area="top"]`, the two-column `.td-split`, bottom area
+  `[data-full-area="bottom"]`. Stacks no longer scroll on their own. An area with no module takes no
+  space (`:not(:has(*))`, not `:empty`). External editor starts full width in the bottom area.
+- **Layout map replaces the move rows** in the module context menu (Task detail only; My tasks keeps
+  plain Move up/down). Live miniature: "Full width - top", left | right columns at the real width
+  ratio, "Full width - bottom". Blocks use Gaia button tokens and metrics (40px, 16px padding,
+  text-md 500): other modules = secondary look, own module = secondary + `--ga-color-surface-selected`
+  fill, the "Move here" slot = primary look. Slot follows the pointer, pushes blocks (150ms); click
+  moves. Keyboard: arrows + Enter. PROJECT-BUILT — no Gaia component.
+- **Move animation**: FLIP, 800ms (`MOVE_MS`, not a Gaia token — trial value), `--ga-easing-standard`;
+  moved module scrolled into view; its menu reopens afterwards with focus on its trigger.
+- **Menu dismissal fixed**: closes on pointerdown outside the MENU (was: outside the module) and on
+  window blur (clicks in the PDF `<embed>` never reach the document).
+- Superseded and removed this session: "Display full width/half width" toggle, Half width / Full
+  width section headers, Place at top/bottom rows. A copy of the sections-menu version is only in
+  the session scratchpad — gone after the session; recover from memory of this note if wanted.
+
+### Next — asked for by the user, NOT started
+
+1. **Give the rearrange (layout-map) menu a header.**
+2. **Make the rearrange menu a separate item opened from the context menu** — the context menu gets
+   an entry that opens the map, instead of the map being inline in it.
+3. **Change the label to "Click here to move".**
+
+Open before building (ask, don't assume):
+- Header text for the rearrange menu?
+- Label of the context-menu entry that opens it, and its icon (every row has a leading icon)?
+- Does "Click here to move" replace the **"Move here"** slot label? (Assumed, unconfirmed.)
+- How the rearrange menu opens: replaces the context menu in place, or a submenu beside it? Back
+  button / Escape behaviour?
+- After a move the menu reopens today — should that be the rearrange menu or the context menu?
+
+### Also outstanding from the 2026-09-30 UX review
+
+- Layout is NOT persisted: reload and next/previous task (`go()` reloads) reset it. Biggest gap.
+- Splitter grip is centred on the full column height, so it can sit off-screen on tall columns.
+- An emptied column keeps its width (blank half-page).
+- The attachment viewer stretches to the taller column's height under whole-frame scroll.
 
 ---
 
@@ -100,7 +150,7 @@ Task detail
 
 | Path | Notes |
 |---|---|
-| `task-detail.html` | Shell, two module stacks either side of the splitter |
+| `task-detail.html` | Shell; `[data-module-frame]` scrolls as one page: top full-width area, two module stacks either side of the splitter, bottom full-width area |
 | `css/task-detail.css` | Context-selector trigger, stack edge insets |
 | `js/task-detail.js` | Host glue only — module events |
 

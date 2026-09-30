@@ -103,35 +103,55 @@
   </div>
 </header>
 
-<!-- ======================= TWO STACKS + SPLITTER ======================
-     .td-split is a 3-column grid: left stack | splitter | right stack.
-     The left column width lives in the custom property --td-left, which
-     js/task-detail.js rewrites as the splitter is dragged. The stacks
-     themselves are vertical flex containers with no background fill —
-     modules get appended into them later.
+<!-- ============================ MODULE FRAME ============================
+     Task detail only (2026-09-30). The frame is the ONE scroll container
+     under the toolbar, holding three bands:
+
+       top area      full-width modules          [data-full-area="top"]
+       .td-split     left stack | splitter | right stack
+       bottom area   full-width modules          [data-full-area="bottom"]
+
+     [data-module-frame] is the contract that turns on "Display full width"
+     in the module menu; My tasks has no frame, so its reading pane never
+     offers it. An empty area takes no space.
+
+     .td-split is a 3-column grid. The left column width lives in the custom
+     property --td-left, which js/splitter.js rewrites as the splitter is
+     dragged. Inside the frame the stacks no longer scroll on their own: they
+     grow to their content and the frame scrolls.
      ==================================================================== -->
-<main class="td-split" id="split">
+<main class="td-frame" id="frame" data-module-frame>
 
-  <section class="td-stack" id="stack-left" data-module-stack aria-label="Left module stack">
-    <appr-workflow-details data-padded></appr-workflow-details>
-    <appr-voucher-details data-padded></appr-voucher-details>
-    <appr-comments data-padded></appr-comments>
+  <section class="td-full" data-full-area="top" aria-label="Top full-width modules"></section>
+
+  <div class="td-split" id="split">
+
+    <section class="td-stack" id="stack-left" data-module-stack aria-label="Left module stack">
+      <appr-workflow-details data-padded></appr-workflow-details>
+      <appr-voucher-details data-padded></appr-voucher-details>
+      <appr-comments data-padded></appr-comments>
+    </section>
+
+    <div class="td-splitter"
+         id="splitter"
+         role="separator"
+         aria-orientation="vertical"
+         aria-label="Resize panels"
+         aria-valuemin="0"
+         aria-valuemax="100"
+         aria-valuenow="50"
+         tabindex="0"
+         title="Drag to resize. Arrow keys to nudge, double-click to reset."><span class="td-splitter__grip" aria-hidden="true"></span></div>
+
+    <section class="td-stack" id="stack-right" data-module-stack aria-label="Right module stack">
+      <appr-attachment-viewer></appr-attachment-viewer>
+    </section>
+
+  </div>
+
+  <!-- External editor starts full width at the bottom (user's call, 2026-09-30). -->
+  <section class="td-full" data-full-area="bottom" aria-label="Bottom full-width modules">
     <appr-external-editor data-padded></appr-external-editor>
-  </section>
-
-  <div class="td-splitter"
-       id="splitter"
-       role="separator"
-       aria-orientation="vertical"
-       aria-label="Resize panels"
-       aria-valuemin="0"
-       aria-valuemax="100"
-       aria-valuenow="50"
-       tabindex="0"
-       title="Drag to resize. Arrow keys to nudge, double-click to reset."><span class="td-splitter__grip" aria-hidden="true"></span></div>
-
-  <section class="td-stack" id="stack-right" data-module-stack aria-label="Right module stack">
-    <appr-attachment-viewer></appr-attachment-viewer>
   </section>
 
 </main>

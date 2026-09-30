@@ -114,3 +114,43 @@ body {
 }
 
 /* (the task-header component lives in css/task-header.css, loaded by both views) */
+
+/* ------------------------------ module frame ------------------------------
+   Task detail only (2026-09-30). One scroll container under the toolbar with
+   three bands: top full-width area, the split, bottom full-width area.
+
+   The scroll moves here from the stacks (user's call: the whole frame scrolls
+   as one page). Inside the frame the split and its stacks size to content,
+   so they must stop scrolling themselves. overflow is reset on BOTH axes: a
+   stack keeping overflow-x:hidden would force its overflow-y back to auto.
+
+   The scrollbar is hidden the same way the stacks hid theirs (app-shell.css),
+   so the view looks as it did; wheel, trackpad and keys still scroll. */
+
+.td-frame {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.td-frame::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+.td-frame .td-split { flex: 0 0 auto; min-height: auto; }
+.td-frame .td-stack { overflow: visible; }
+
+/* Full-width areas. Side insets match the stacks' outer edges; the bottom
+   padding gives the same 16px step the stacks leave below their last module.
+   An empty area takes no space at all. */
+.td-full {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-size-spacing-05);
+  padding: 0 var(--ga-size-spacing-05) var(--ga-size-spacing-05);
+}
+/* :not(:has(*)), not :empty — an area written with markup inside it keeps
+   its whitespace text nodes after the module leaves, and :empty counts those. */
+.td-full:not(:has(*)) { display: none; }
