@@ -144,6 +144,29 @@
   outline-offset: calc(-1 * var(--ga-size-border-width-md));
 }
 
+/* Leading icon slot. Gaia colours .ga-menu__item-icon (primary, and
+   icon-action on hover) but gives it NO dimensions, so the box is set here —
+   the same "Gaia hands the glyph to the markup" pattern as the checkbox and
+   switch. The svg is created at 16, and this pins it so a stray width rule
+   cannot stretch it. */
+.apm-menu .ga-menu__item-icon {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  /* Gaia nudges the slot 2px down to sit on the first line of a two-line
+     item. These rows are single-line and centred, so the nudge only pushes
+     the glyph off the label's midline. */
+  margin-top: 0;
+}
+.apm-menu .ga-menu__item-icon svg { width: 100%; height: 100%; }
+
+/* Asserted for the same reason as the label colour above: Gaia sets this
+   nested inside .ga-menu__item:hover, and a reset in this file must not be
+   able to swallow it silently. */
+.apm-menu .ga-menu__item:hover .ga-menu__item-icon {
+  color: var(--ga-color-icon-action);
+}
+
 /* Gaia indents the separator 12px from the left; give it room either side. */
 .apm-menu .ga-menu__separator { margin-block: var(--ga-size-spacing-02); }
 

@@ -31,6 +31,13 @@
   var I = window.ApprIcon;
   var EXTERNAL = { paths: ['M15 3h6v6', 'M10 14 21 3', 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'] };
 
+  /* A different glyph from EXTERNAL above, deliberately: the body's placeholder
+     keeps `external-link`, while the menu row uses `square-arrow-out-up-right`
+     (user's call 2026-09-24) — the arrow leaving the square reads as the
+     editor departing into its own window. Verified against lucide-static
+     1.48.0. */
+  var DETACH = { paths: ['M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6', 'm21 3-9 9', 'M15 3h6v6'] };
+
   class ExternalEditor extends window.ApprModule {
 
     static get observedAttributes() { return ['label', 'collapsed', 'provider']; }
@@ -43,7 +50,7 @@
     get defaultLabel() { return 'External editor provided by ' + this.provider; }
 
     secondaryActions() {
-      return [{ id: 'detach', label: 'Open editor in a new window' }];
+      return [{ id: 'detach', label: 'Open editor in a new window', icon: DETACH }];
     }
 
     onAction(id) {

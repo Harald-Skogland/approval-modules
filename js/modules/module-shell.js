@@ -12,6 +12,9 @@
    - The kebab opens the module's context menu: move actions, a divider, then
      any module-specific actions. Actions that do not apply are HIDDEN, not
      disabled, and the divider hides with them.
+   - EVERY row carries a leading Lucide icon (user's call 2026-09-24): the
+     move rows show the direction the module travels, and a module's own
+     actions supply theirs through secondaryActions().
 
    In the live product only Attachment viewer and External editor carry header
    actions — Workflow details and Expense claim details have a bare title.
@@ -32,7 +35,9 @@
    SUBCLASS API
      get defaultLabel()      header title when no label attribute is set
      renderBody(container)   fill the module body; called on (re)render
-     secondaryActions()      [{ id, label }] shown below the menu divider
+     secondaryActions()      [{ id, label, icon? }] shown below the menu
+                             divider. icon takes an ICONS name or a Lucide
+                             spec object, and renders in Gaia's leading slot
      onAction(id)            handle one of those actions
      observed()              extra attribute names to re-render on
 
@@ -54,8 +59,19 @@
   var ICONS = {
     'chevron-up':        { paths: ['m18 15-6-6-6 6'] },
     'chevron-down':      { paths: ['m6 9 6 6 6-6'] },
-    'ellipsis-vertical': { circles: [[12, 5], [12, 12], [12, 19]] }
+    'ellipsis-vertical': { circles: [[12, 5], [12, 12], [12, 19]] },
+    /* The four move arrows. Verified against lucide-static 1.48.0, not
+       recalled — arrow-up / -down / -left / -right, two paths each. */
+    'arrow-up':          { paths: ['m5 12 7-7 7 7', 'M12 19V5'] },
+    'arrow-down':        { paths: ['M12 5v14', 'm19 12-7 7-7-7'] },
+    'arrow-left':        { paths: ['m12 19-7-7 7-7', 'M19 12H5'] },
+    'arrow-right':       { paths: ['M5 12h14', 'm12 5 7 7-7 7'] }
   };
+
+  /* Menu rows are single-line and 36px tall, so 16px is the icon box —
+     svgIcon sizes nothing by default and Gaia's .ga-menu__item-icon carries
+     colour but NO dimensions (see HANDOFF s12). */
+  var MENU_ICON_SIZE = '16';
 
   /* Accepts a name from ICONS, or a spec object so modules can pass their own
      canonical Lucide data without mutating a shared registry:
@@ -142,11 +158,13 @@
     menu.style.visibility = vis;
   }
 
+  /* [id, label, icon]. The icon is the direction the module actually travels,
+     so the row reads as its own preview (user's call 2026-09-24). */
   var MOVES = [
-    ['up',    'Move up'],
-    ['down',  'Move down'],
-    ['left',  'Move left'],
-    ['right', 'Move right']
+    ['up',    'Move up',    'arrow-up'],
+    ['down',  'Move down',  'arrow-down'],
+    ['left',  'Move left',  'arrow-left'],
+    ['right', 'Move right', 'arrow-right']
   ];
 
   class ApprModule extends HTMLElement {
@@ -240,7 +258,7 @@
 
       this._items = {};
       MOVES.forEach(function (pair) {
-        this._menu.appendChild(this._menuItem(pair[0], pair[1]));
+        this._menu.appendChild(this._menuItem(pair[0], pair[1], pair[2]));
       }, this);
 
       /* Divider, then whatever the module adds. Both hide when empty. */
@@ -251,7 +269,7 @@
 
       this._extras = this.secondaryActions() || [];
       this._extras.forEach(function (a) {
-        this._menu.appendChild(this._menuItem(a.id, a.label));
+        this._menu.appendChild(this._menuItem(a.id, a.label, a.icon));
       }, this);
 
       menuWrap.appendChild(this._menuBtn);
@@ -268,11 +286,22 @@
       this._syncCollapsed();
     }
 
-    _menuItem(id, label) {
+    /* icon is optional: a name from ICONS, or a spec object, exactly as
+       svgIcon() takes it. It goes in Gaia's OWN leading slot
+       (.ga-menu__item-icon), which already carries the hover, disabled and
+       selected colours — nothing here restyles it. */
+    _menuItem(id, label, icon) {
       var item = document.createElement('button');
       item.className = 'ga-menu__item';
       item.type = 'button';
       item.setAttribute('role', 'menuitem');
+      if (icon) {
+        var slot = document.createElement('span');
+        slot.className = 'ga-menu__item-icon';
+        slot.setAttribute('aria-hidden', 'true');
+        slot.appendChild(svgIcon(icon, MENU_ICON_SIZE));
+        item.appendChild(slot);
+      }
       var span = document.createElement('span');
       span.className = 'ga-menu__item-label';
       span.textContent = label;

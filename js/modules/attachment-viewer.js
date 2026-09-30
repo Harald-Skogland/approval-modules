@@ -47,8 +47,15 @@
       return (t && DOCS[t.documentType]) || FALLBACK;
     }
 
+    /* Lucide `download`, verified against lucide-static 1.48.0. Passed as a
+       spec rather than added to the shell's registry, which stays the shell's
+       own chrome plus the move arrows. */
     secondaryActions() {
-      return [{ id: 'download', label: 'Download all attachments' }];
+      return [{
+        id: 'download',
+        label: 'Download all attachments',
+        icon: { paths: ['M12 15V3', 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5'] }
+      }];
     }
 
     onAction(id) {
