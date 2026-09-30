@@ -104,8 +104,8 @@ Task detail
 | `css/task-detail.css` | Context-selector trigger, stack edge insets |
 | `js/task-detail.js` | Host glue only — module events |
 
-Modules — `js/modules/*.js` + `css/modules/*.css`, six of them: `attachment-viewer`,
-`voucher-details`, `workflow-details`, `workflow-history`, `comments`, `external-editor`.
+Modules — `js/modules/*.js` + `css/modules/*.css`, five of them: `attachment-viewer`,
+`voucher-details`, `workflow-details` (events grouped under collapsible step cards, rebuilt from Figma `14818:8559`), `comments`, `external-editor`.
 
 Assets — `assets/documents/*.pdf`, one per document type, each with the `.source.html` it was
 rendered from (headless Chrome). Regenerate rather than hand-edit the binary.
@@ -134,6 +134,13 @@ rendered from (headless Chrome). Regenerate rather than hand-edit the binary.
 - The `Comments` header truncates to `Co...` at its measured 60px width. Faithful, but ugly.
 - No empty state beyond a single line of text; no error or permission-denied states.
 - Row click only raises a stub toast.
+
+## 7b. Known product features not yet built
+
+- **Workflow details → "Hide skipped steps"** (Figma COM-Approval `14818:8559`). A checkbox in the
+  module header, right-aligned beside the due dates. It is only displayed when at least one step in
+  the workflow **has been skipped**. Deliberately omitted on 2026-09-30 (user's call): there is no
+  design yet for what a skipped step looks like, so there is nothing for it to hide.
 
 ## 8. Next steps, in the order they make sense
 

@@ -1,102 +1,170 @@
 /* =========================================================================
-   Module — workflow-details
+   Module — workflow-details (rebuilt from Figma 14818:8559, 2026-09-30)
 
-   Chrome from css/modules/module-shell.css.
+   Chrome from css/modules/module-shell.css; the body is [data-padded], which
+   supplies the frame's 16px inset and the 16px gap below the due dates.
 
-   FIDELITY: segment shape and colours are APPROXIMATED from the 2026-08-24
-   screenshot, not measured — see the header comment in
-   js/modules/workflow-details.js for why. Colours come from Gaia's raw scale
-   as the nearest match, the same call as the overdue red in my-tasks.css.
+   .wd-step is PROJECT-BUILT — Gaia 0.6.11 ships no accordion. Inside it only
+   real Gaia parts: .ga-button--ghost--icon-only, .ga-tag, .ga-avatar--small.
+
+   Figma -> package token translations (the frame uses names that do not exist):
+     --ga-text-md-size       -> --ga-text-md-font-size
+     --ga-text-md-lineheight -> --ga-text-md-line-height (20px, Figma says 24)
+     --ga-text-sm-lineheight -> --ga-text-sm-line-height (20px, Figma says 16)
+     --ga-radius-default     -> --ga-radius
+     --ga-border-width-sm    -> --ga-size-border-width-sm
    ========================================================================= */
 
-/* ------------------------------- step chain -------------------------------
-   Gaia's .ga-progress-indicator--horizontal does the work now: item borders per
-   state (2px surface-disabled, 4px border-action when current, border-success
-   when completed), icon colours, label and description typography, hover and
-   focus. This replaced a hand-rolled chevron chain with clip-path arrows and
-   raw-scale colours picked off a screenshot — so nothing here is approximated
-   any more.
+/* ------------------------------- due dates ------------------------------- */
 
-   What remains is only what the package leaves to the consumer. */
-
-/* .ga-icon ships with NO dimensions in @vsn-ux/gaia-styles — it only sets
-   colour, nested inside components. Every icon wrapper has to size itself.
-   Same trap as the context-selector and the checkbox indicators. */
-.wd-chain .ga-icon {
-  display: inline-flex;
-  flex-shrink: 0;
-  width: var(--ga-size-16);
-  height: var(--ga-size-16);
-}
-.wd-chain .ga-icon svg { width: 100%; height: 100%; display: block; }
-
-/* Items are <button>s, so strip the UA chrome the package does not. */
-.wd-chain .ga-progress-indicator__item {
-  border-right: 0;
-  border-bottom: 0;
-  border-left: 0;
-  font: inherit;
-  appearance: none;
-}
-
-/* Descriptions wrap rather than clip — they carry the who/what of each step,
-   and a step column is narrow once the pane is in play. */
-.wd-chain .ga-progress-indicator__description { white-space: normal; }
-
-/* Narrow hosting: stack the steps instead of crushing three columns. Gaia's
-   own --vertical variant flips the borders from top to left, which is exactly
-   what is wanted, so switch the class in JS if this proves too crude. */
-@container (max-width: 520px) {
-  .wd-chain { flex-wrap: wrap; }
-  .wd-chain .ga-progress-indicator__item { flex: 1 1 100%; }
-}
-
-/* ------------------------------ started at ------------------------------ */
-
-.wd-started {
-  display: flex;
-  align-items: center;
-  gap: var(--ga-size-spacing-03);
+.wd-dates { margin: 0; }
+.wd-dates__row { display: flex; align-items: center; }
+.wd-dates__label,
+.wd-dates__value {
   margin: 0;
   font-size: var(--ga-text-sm-font-size);
-  line-height: 1;
+  line-height: var(--ga-text-sm-line-height);
   color: var(--ga-color-text-body);
 }
-.wd-started__icon { flex: 0 0 auto; color: var(--ga-color-icon-primary); }
+.wd-dates__label { flex: 0 0 144px; }
+.wd-dates__value { flex: 1 1 auto; min-width: 0; }
 
-/* ------------------------------ detail row ------------------------------ */
+/* --------------------------------- steps --------------------------------- */
 
-.wd-row {
+.wd-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-size-spacing-02);
+}
+
+.wd-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-size-spacing-03);
+  padding: var(--ga-size-spacing-03);
+  border: var(--ga-size-border-width-sm) solid var(--ga-color-border-tertiary);
+  border-radius: var(--ga-radius);
+  overflow: clip;
+}
+.wd-step--open { background: var(--ga-color-surface-selected); }
+
+.wd-step__head {
   display: flex;
   align-items: center;
   gap: var(--ga-size-spacing-03);
-  width: 100%;
-  padding: var(--ga-size-spacing-04) 0;
-  border: 0;
-  border-top: var(--ga-size-border-width-sm) solid var(--ga-color-border-tertiary);
-  background: none;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  color: var(--ga-color-text-action);
 }
-.wd-row:hover  { color: var(--ga-color-text-action-hover); }
-.wd-row:focus-visible {
-  outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus);
-  outline-offset: 2px;
+.wd-step__toggle { flex: 0 0 auto; }
+
+.wd-step__titles {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-03);
+  font-size: var(--ga-text-md-font-size);
+  line-height: var(--ga-text-md-line-height);
+  letter-spacing: var(--ga-text-md-letter-spacing);
+}
+.wd-step__name {
+  flex: 0 0 auto;
+  font-weight: var(--ga-font-weight-bold);
+  color: var(--ga-color-text-body);
+}
+.wd-step__summary {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ga-color-text-body-secondary);
+}
+.wd-step__tag { flex: 0 0 auto; }
+
+/* Gaia's tag gives the icon colour, not a size. */
+.wd-step__tag .ga-tag__icon { width: 16px; height: 16px; flex: 0 0 auto; }
+
+.wd-step__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ga-size-spacing-03);
+}
+/* Flex display would otherwise beat the UA [hidden] rule. */
+.wd-step__body[hidden] { display: none; }
+
+/* --------------------------------- events --------------------------------
+   One layout for every event type (tidied frame, 2026-09-30):
+     Caption (semibold, body) ............ timestamp (regular, secondary)
+     [avatar] sentence — 12px secondary, names semibold
+              comment — 12px body, indented to start under the name       */
+
+.wd-event {
+  --wd-avatar: 24px;               /* Gaia small; the frame draws 16px */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--ga-size-spacing-02) var(--ga-size-spacing-03);
+  border: var(--ga-size-border-width-sm) solid var(--ga-color-border-tertiary);
   border-radius: var(--ga-radius);
+  background: var(--ga-color-surface-primary);
 }
 
-.wd-row__label   { font-size: var(--ga-text-md-font-size); font-weight: var(--ga-font-weight-semibold); }
-.wd-row__value   { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
-                   white-space: nowrap; font-size: var(--ga-text-md-font-size);
-                   color: var(--ga-color-text-body); }
-.wd-row__chevron { flex: 0 0 auto; }
-
-/* Narrow hosting: stack the chain vertically rather than crushing segments. */
-@container (max-width: 560px) {
-  .wd-chain { flex-direction: column; gap: var(--ga-size-spacing-04); }
-  .wd-seg, .wd-step:first-child .wd-seg, .wd-step:last-child .wd-seg { clip-path: none; border-radius: var(--ga-radius); }
-  .wd-caption, .wd-step:first-child .wd-caption { padding-left: var(--ga-size-spacing-04); }
+.wd-event__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ga-size-spacing-03);
+  font-size: var(--ga-text-sm-font-size);
+  line-height: var(--ga-text-sm-line-height);
+  white-space: nowrap;
 }
-appr-workflow-details { container-type: inline-size; }
+.wd-event__caption { font-weight: var(--ga-font-weight-semibold); color: var(--ga-color-text-body); }
+.wd-event__when    { color: var(--ga-color-text-body-secondary); }
+
+.wd-event__who {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-03);
+}
+
+.wd-event__line,
+.wd-event__text {
+  margin: 0;
+  font-size: var(--ga-text-sm-font-size);
+  line-height: var(--ga-text-sm-line-height);
+}
+.wd-event__line { min-width: 0; color: var(--ga-color-text-body-secondary); }
+.wd-event__name { font-weight: var(--ga-font-weight-semibold); }
+.wd-event__text {
+  padding-left: calc(var(--wd-avatar) + var(--ga-size-spacing-03));
+  color: var(--ga-color-text-body);
+}
+
+/* The avatar ring and fill as drawn on the approver avatars in the frame. */
+.wd-avatar {
+  flex: 0 0 auto;
+  border-color: var(--ga-color-border-tertiary);
+  background: var(--ga-color-surface-primary);
+  color: var(--ga-color-text-headings);
+}
+
+/* ------------------------ current step + approvers ----------------------- */
+
+.wd-current { gap: var(--ga-size-spacing-03); }
+
+.wd-approvers {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--ga-size-spacing-03);
+  row-gap: var(--ga-size-spacing-03);
+  align-items: center;
+  font-size: var(--ga-text-sm-font-size);
+  line-height: var(--ga-text-sm-line-height);
+  color: var(--ga-color-text-body);
+}
+.wd-approvers__th { font-weight: var(--ga-font-weight-semibold); color: var(--ga-color-text-body-secondary); }
+
+.wd-approver {
+  display: flex;
+  align-items: center;
+  gap: var(--ga-size-spacing-03);
+}
+.wd-approver__name { width: 160px; }
