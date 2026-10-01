@@ -55,13 +55,32 @@
         id: 'download',
         label: 'Download all attachments',
         icon: { paths: ['M12 15V3', 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5'] }
+      }, {
+        /* Added 2026-10-01 (user's call), mirroring External editor's
+           "Open editor in a new window": same label pattern, same
+           `square-arrow-out-up-right` glyph (lucide-static 1.48.0). */
+        id: 'detach',
+        label: 'Open attachment in a new window',
+        icon: { paths: ['M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6', 'm21 3-9 9', 'M15 3h6v6'] }
       }];
     }
 
     onAction(id) {
-      /* Stubbed like the rest of the prototype's outbound actions — the
-         appr:action event the shell emits is the hook a host would use. */
+      /* Download is stubbed like the rest of the prototype's outbound actions
+         — the appr:action event the shell emits is the hook a host would use. */
       if (id === 'download') { this.emit('appr:download-all'); }
+      /* Detach is real: the document is a plain PDF URL, so the browser's own
+         viewer opens it. A WINDOW, not a tab (user's call, 2026-10-01): the
+         `popup` feature plus a size is what makes browsers open a separate
+         window. Size is a project choice — 60% of the screen wide, 90% tall,
+         centred. noopener: it needs no handle back to this page. */
+      if (id === 'detach' && this.src) {
+        var sw = window.screen.availWidth, sh = window.screen.availHeight;
+        var w = Math.round(sw * 0.6), h = Math.round(sh * 0.9);
+        var left = Math.round((sw - w) / 2), top = Math.round((sh - h) / 2);
+        window.open(this.src, '_blank',
+          'popup,noopener,width=' + w + ',height=' + h + ',left=' + left + ',top=' + top);
+      }
     }
 
     renderBody(body) {
