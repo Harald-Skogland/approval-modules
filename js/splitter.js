@@ -64,9 +64,17 @@
 
     var activePointer = null;
 
+    /* Tell the host the USER moved the splitter (drag end, double-click,
+       keyboard) — not the resize re-clamp, so a narrow window cannot
+       overwrite a remembered position. Read by js/layout-memory.js. */
+    function notify() {
+      split.dispatchEvent(new CustomEvent('td:split-change', { bubbles: true, detail: { pct: pct } }));
+    }
+
     function onPointerMove(e) { apply(pctFromClientX(e.clientX)); }
 
     function endDrag() {
+      var wasDragging = splitter.classList.contains('is-dragging');
       splitter.classList.remove('is-dragging');
       document.body.classList.remove('td-dragging');
       /* Listeners live on window, not the splitter: pointer capture can be
@@ -79,6 +87,7 @@
         try { splitter.releasePointerCapture(activePointer); } catch (err) { /* never captured */ }
         activePointer = null;
       }
+      if (wasDragging) { notify(); }
     }
 
     splitter.addEventListener('pointerdown', function (e) {
@@ -102,7 +111,7 @@
       }
     });
 
-    splitter.addEventListener('dblclick', function () { apply(DEFAULT_PCT); });
+    splitter.addEventListener('dblclick', function () { apply(DEFAULT_PCT); notify(); });
 
     splitter.addEventListener('keydown', function (e) {
       var step = e.shiftKey ? NUDGE_BIG : NUDGE;
@@ -115,6 +124,7 @@
       if (next === null) { return; }
       e.preventDefault();
       apply(next);
+      notify();
     });
 
     /* Re-clamp on resize: a percentage legal at 1600px can violate the

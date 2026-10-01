@@ -9,7 +9,7 @@ Last session: **2026-09-30**. Earlier sections below date from 2026-08-21/24 unl
 
 ## 0. Resume here — 2026-09-30 / 2026-10-01 sessions
 
-### Work on branch `workflow-details-figma` (pushed to origin, not merged to `main`)
+### Work on branch `workflow-details-figma` (merged to `main` and deployed 2026-10-01 at `350b4ec`)
 
 Three commits on top of `main`: `54a5e42` Workflow details rebuild, `696b14f` menu-row icons, then
 the commit "Add full-width areas and a layout-map module menu to Task detail", which holds
@@ -50,7 +50,10 @@ everything below — built and browser-verified:
 
 ### Also outstanding from the 2026-09-30 UX review
 
-- Layout is NOT persisted: reload and next/previous task (`go()` reloads) reset it. Biggest gap.
+- ~~Layout is not persisted~~ — DONE 2026-10-01: `js/layout-memory.js` keeps module order,
+  collapsed state and splitter position per page in **sessionStorage** (this tab only — user's
+  call), so task switches and reloads keep it; a new tab starts from the default. Task detail and
+  the My tasks preview pane are stored separately. No reset action (user's call).
 - Splitter grip is centred on the full column height, so it can sit off-screen on tall columns.
 - An emptied column keeps its width (blank half-page).
 - The attachment viewer stretches to the taller column's height under whole-frame scroll.
